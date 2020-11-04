@@ -34,6 +34,10 @@ print(sj1_csv.dropna(axis=0, how='any'))
 sj1_csv_exam = sj1_csv.dropna(axis=0, how='any')
 
 sj1_csv_people1 = sj1_csv_exam.iloc[0, :]
+sj1_csv_people2 = sj1_csv_exam.iloc[1, :]
+sj1_csv_people3 = sj1_csv_exam.iloc[2, :]
+sj1_csv_people4 = sj1_csv_exam.iloc[3, :]
+sj1_csv_people5 = sj1_csv_exam.iloc[5, :]
 
 print(sj1_csv_people1)
 
@@ -77,6 +81,8 @@ biowave_full.index = range(len(biowave_full))
 for i in count:
     A = biowave_full[i+50:i+200]
     print(A.values)
+
+    
     # print(A.groupby(A[0]).last())
     print(A)
 
