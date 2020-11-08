@@ -39,7 +39,10 @@ print(sj1_csv_people1)
 
 
 biosignal = sj1_csv_people1[1:5]
-biowave = sj1_csv_people1[5:]
+# biowave = sj1_csv_people1[5:6675]
+
+# people1의 wave 30개 선정
+biowave = sj1_csv_people1[1289:6505]
 x = range(len(biowave))
 
 print(biosignal)
@@ -50,4 +53,48 @@ print(x)
 # plt.rcParams["figure.figsize"] = (1000,1000)
 plt.rcParams["figure.figsize"] = (25, 10)
 plt.plot(x, biowave)
+# plt.show()
+
+min = biowave.astype(float).min()
+# max = biowave.astype(float).max()
+print("min", min)
+# print("max", max)
+
+############
+
+# for i in range(len(biowave)):
+#     biowave.iloc[i] = biowave.iloc[i] - min
+#
+# x = range(len(biowave))
+#
+# plt.plot(x, biowave)
+# plt.show()
+#
+# min = biowave.astype(float).min()
+# max = biowave.astype(float).max()
+# print("min", min)
+# print("max", max)
+#
+# ###########
+
+for i in range(len(biowave)):
+    biowave.iloc[i] = biowave.iloc[i] - min
+    # print(i, " ", biowave.iloc[i])
+
+max = biowave.astype(float).max()
+print("max", max)
+
+for i in range(len(biowave)):
+    biowave.iloc[i] = biowave.iloc[i] / max
+    print(i, " ", biowave.iloc[i])
+
+x = range(len(biowave))
+
+plt.plot(x, biowave)
+plt.axis([0, len(biowave), 0, 1])
 plt.show()
+
+min = biowave.astype(float).min()
+max = biowave.astype(float).max()
+print("min", min)
+print("max", max)
