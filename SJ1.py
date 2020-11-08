@@ -34,6 +34,10 @@ print(sj1_csv.dropna(axis=0, how='any'))
 sj1_csv_exam = sj1_csv.dropna(axis=0, how='any')
 
 sj1_csv_people1 = sj1_csv_exam.iloc[0, :]
+sj1_csv_people2 = sj1_csv_exam.iloc[1, :]
+sj1_csv_people3 = sj1_csv_exam.iloc[2, :]
+sj1_csv_people4 = sj1_csv_exam.iloc[3, :]
+# sj1_csv_people5 = sj1_csv_exam.iloc[5, :]
 
 print(sj1_csv_people1)
 
@@ -57,7 +61,8 @@ print(sj1_csv_people1)
 count = []
 start_point = [0]
 end_point = []
-wave_range = 7500-73
+# wave_range = 7500-73
+wave_range = 6505-1289
 
 for i in range(wave_range):
     if i%175 == 0:
@@ -68,32 +73,42 @@ print("COUNT :", count)
 plt.rcParams["figure.figsize"] = (25, 10)
 
 biosignal = sj1_csv_people1[1:5]
-biowave_full = sj1_csv_people1[73:]
+# biowave_full = sj1_csv_people1[73:]
+biowave_full = sj1_csv_people1[1289:6505]
 biowave_full.index = range(len(biowave_full))
-
+# print("bio",biowave_full.values)
 # print(biowave_full[169])
-# print(biowave_full)
+print(biowave_full)
 
 for i in count:
     A = biowave_full[i+50:i+200]
     print(A.values)
+    print("i", i)
+
+    if i+200 > len(biowave_full):
+        break
+    
     # print(A.groupby(A[0]).last())
     print(A)
 
     min_idx = A.astype(float).idxmin()
     min = A.astype(float).min()
-    for j in range(1, 5):
-        print(j)
-        if A[min_idx + j] == min:
-            pass
-        else:
-            min_idx = min_idx + j - 1
-            break
+
+    print("min_idx",min_idx)
+
+    if min_idx != wave_range-1:
+        for j in range(1, 5):
+            print(j)
+            if A[min_idx + j] == min:
+                pass
+            else:
+                min_idx = min_idx + j - 1
+                break
     # print("idx :", A.astype(float).idxmin())
     # print("min :", A.min())
     start_point.append(min_idx)
     print(min_idx)
-    print(min)
+    print("min", min)
 
 
     # A = biowave_full[i:i+200]
@@ -114,32 +129,73 @@ for i in count:
 end_point = start_point[1:]
 end_point.append(wave_range)
 
-print(start_point)
+print("start", start_point)
 print(end_point)
 
 # samp = []
 
+Max_x = 256
+
+# for i, point in enumerate(start_point):
+#     biowave = biowave_full[point:end_point[i]+1]
+#     x = range(len(biowave))
+#
+#     # biowave.index
+#     #
+#     # print(biowave)
+#     # samp.append(biowave.astype(float).idxmin())
+#     # print("idx :", biowave.astype(float).idxmin())
+#     # print("min :", biowave.min())
+#
+#     # min_idx = biowave.astype(float).idxmin()
+#
+#     # biowave = biowave_full[i:min_idx]
+#     # x = range(min_idx)
+#     # # print("x :", x)
+#     # plt.plot(x, biowave)
+#
+#     print("biowave :", biowave)
+#     print("x :", x)
+#     plt.plot(x, biowave)
+#     plt.show()
+
+biowave_filter = biowave_full
+
+min = biowave_filter.astype(float).min()
+print("min", min)
+
+for i in range(len(biowave_filter)):
+    biowave_filter.iloc[i] = biowave_filter[i] - min
+
+max = biowave_filter.astype(float).max()
+print("max", max)
+
+for i in range(len(biowave_filter)):
+    biowave_filter.iloc[i] = biowave_filter.iloc[i] / max
+
 for i, point in enumerate(start_point):
-    biowave = biowave_full[point:end_point[i]+1]
+    # biowave = pd.Series(biowave_filter[point:end_point[i]+1], index=range(point, end_point[i]+1))
+    # biowave = pd.Series(biowave_filter[point:end_point[i]+1], index=range(0, ((end_point[i]+1)-(point))))
+    biowave = biowave_filter[point:end_point[i]+1]
+    # biowave = biowave.reindex(range(0, ((end_point[i]+1)-(point))))
+    # print("i",end_point[i]+1)
+    # print("bio", biowave)
+    len_biowave = len(biowave)
+    Max_x = 256 - len_biowave + 1
+    last_index_num = biowave.index[len_biowave-1]
+    # print("Max",Max_x)
+    # print("len_bio",len_biowave)
+    # print("idx", biowave.index[len_biowave-1])
+    for j in range(0, Max_x):
+        biowave.loc[last_index_num+j] = 0
+        # print("j",j)
+        # print("len + j",len_biowave + j)
+        # print("biowave", biowave.iloc[len_biowave])
+        # print("??", biowave.iloc[len_biowave])
+        # print(biowave)
+    print(biowave.values)
     x = range(len(biowave))
-
-    # biowave.index
-    #
-    # print(biowave)
-    # samp.append(biowave.astype(float).idxmin())
-    # print("idx :", biowave.astype(float).idxmin())
-    # print("min :", biowave.min())
-
-    # min_idx = biowave.astype(float).idxmin()
-
-    # biowave = biowave_full[i:min_idx]
-    # x = range(min_idx)
-    # # print("x :", x)
-    # plt.plot(x, biowave)
-
-    print("biowave :", biowave)
-    print("x :", x)
+    # print(x)
     plt.plot(x, biowave)
+    plt.axis([0, len(biowave), 0, 1])
     plt.show()
-
-# print(samp)
