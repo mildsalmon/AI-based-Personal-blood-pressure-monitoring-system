@@ -6,14 +6,13 @@ import pandas as pd
 
 
 class SJ1_full_wave:
-    def __init__(self):
-        self.wave_start_point
-        self.wave_end_point
-
+    def __init__(self, num):
         pd.set_option('display.max_columns', 100)
         pd.set_option('display.width', 1000)
 
-        self.sj1_csv_people = {
+        people_num = num
+
+        sj1_csv_people = {
             # people 1
             1: self.select_people(0),
             # people 2
@@ -25,6 +24,15 @@ class SJ1_full_wave:
             # people 5
             5: self.select_people(4)
         }
+
+        self.sj1_csv_people_select = sj1_csv_people[people_num]
+
+        print(self.sj1_csv_people_select)
+
+        self.setting(people_num)
+        self.filter()
+        self.draw()
+
 
     def select_people(self, num):
         sj1_csv = pd.read_csv('data/SJ1.csv', engine='python')
@@ -40,7 +48,7 @@ class SJ1_full_wave:
 
         return sj1_csv_people
 
-    def setting(self, sj1_csv_people_select, people_num):
+    def setting(self, people_num):
         if people_num == 1:
             wave_start_point = 1289
             wave_end_point = 6505
@@ -48,265 +56,60 @@ class SJ1_full_wave:
             wave_start_point = 5
             wave_end_point = 0
         elif people_num == 3:
-            wave_start_point = 1289
-            wave_end_point = 6505
+            wave_start_point = 5
+            wave_end_point = 0
         elif people_num == 4:
-            wave_start_point = 1289
-            wave_end_point = 6505
+            wave_start_point = 5
+            wave_end_point = 0
         elif people_num == 5:
-            wave_start_point = 1289
-            wave_end_point = 6505
+            wave_start_point = 5
+            wave_end_point = 0
 
         self.wave_start_point = wave_start_point
         self.wave_end_point = wave_end_point
 
+    def filter(self):
+        biosignal = self.sj1_csv_people_select[1:5]
+        if self.wave_end_point == 0:
+            biowave = self.sj1_csv_people_select[self.wave_start_point:]
+        elif self.wave_end_point != 0:
+            biowave = self.sj1_csv_people_select[self.wave_start_point:self.wave_end_point]
+        x = range(len(biowave))
 
-# f = open('data/SJ1.csv', 'r')#, encoding='utf-8')
-# reader = csv.reader(f)
+        print("biosignal :",biosignal)
+        print("biowave :", biowave)
+        print("x :", x)
 
-# for line in reader:
-#     print(len(line))
-#     print(line)
-#
-# f.close()
-#
-# plt.plot(line)
-# plt.show()
+        min = biowave.astype(float).min()
+
+        print("min :", min)
+
+        for i in range(len(biowave)):
+            biowave.iloc[i] = biowave.iloc[i] - min
+
+        max = biowave.astype(float).max()
+
+        print("max :", max)
+
+        for i in range(len(biowave)):
+            biowave.iloc[i] = biowave.iloc[i] / max
+
+            print(i, " ", biowave.iloc[i])
+
+        x = range(len(biowave))
+
+        self.x = x
+        self.biowave = biowave
+
+    def draw(self):
+        plt.rcParams["figure.figsize"] = (25, 10)
+        plt.plot(self.x, self.biowave)
+        plt.axis([0, len(self.biowave), 0, 1])
+        plt.show()
 
 if __name__ == "__main__":
 
-    # 판다스 크기 키우기
-    # pd.set_option('display.max_rows', 500)
-
-    people_num = 2
-
-    sj1_csv_people_select = sj1_csv_people[people_num]
-
-    # people 1
-    # sj1_csv_people1 = sj1_csv_exam.iloc[0, :]
-
-    # people 2
-    # sj1_csv_people1 = sj1_csv_exam.iloc[1, :]
-
-    # people 3
-    # sj1_csv_people1 = sj1_csv_exam.iloc[2, :]
-
-    # people 4
-    # sj1_csv_people1 = sj1_csv_exam.iloc[3, :]
-
-    # people 5
-    # sj1_csv_people1 = sj1_csv_exam.iloc[4, :]
-
-    print(sj1_csv_people_select)
-
-    biosignal = sj1_csv_people_select[1:5]
-    # biowave = sj1_csv_people1[5:6675]
-
-    if people_num == 1:
-        # people1의 wave 30개 선정
-        biowave = sj1_csv_people_select[1289:6505]
-        x = range(len(biowave))
-
-        print(biosignal)
-        print(biowave)
-
-        print(x)
-
-        # plt.rcParams["figure.figsize"] = (1000,1000)
-        # plt.rcParams["figure.figsize"] = (25, 10)
-        # plt.plot(x, biowave)
-        # plt.show()
-
-        min = biowave.astype(float).min()
-        # max = biowave.astype(float).max()
-        print("min", min)
-        # print("max", max)
-
-        ############
-
-        # for i in range(len(biowave)):
-        #     biowave.iloc[i] = biowave.iloc[i] - min
-        #
-        # x = range(len(biowave))
-        #
-        # plt.plot(x, biowave)
-        # plt.show()
-        #
-        # min = biowave.astype(float).min()
-        # max = biowave.astype(float).max()
-        # print("min", min)
-        # print("max", max)
-        #
-        # ###########
-
-        for i in range(len(biowave)):
-            biowave.iloc[i] = biowave.iloc[i] - min
-            # print(i, " ", biowave.iloc[i])
-
-        max = biowave.astype(float).max()
-        print("max", max)
-
-        for i in range(len(biowave)):
-            biowave.iloc[i] = biowave.iloc[i] / max
-            print(i, " ", biowave.iloc[i])
-
-        x = range(len(biowave))
-
-        plt.rcParams["figure.figsize"] = (25, 10)
-        plt.plot(x, biowave)
-        plt.axis([0, len(biowave), 0, 1])
-        plt.show()
-
-        min = biowave.astype(float).min()
-        max = biowave.astype(float).max()
-        print("min", min)
-        print("max", max)
-
-    elif people_num == 2:
-        # people2의 wave 30개 선정
-        biowave = sj1_csv_people_select[5:]
-        x = range(len(biowave))
-
-        print(biosignal)
-        print(biowave)
-
-        print(x)
-
-        plt.rcParams["figure.figsize"] = (25, 10)
-        plt.plot(x, biowave)
-
-        min = biowave.astype(float).min()
-        print("min", min)
-
-        for i in range(len(biowave)):
-            biowave.iloc[i] = biowave.iloc[i] - min
-
-        max = biowave.astype(float).max()
-        print("max", max)
-
-        for i in range(len(biowave)):
-            biowave.iloc[i] = biowave.iloc[i] / max
-            print(i, " ", biowave.iloc[i])
-
-        x = range(len(biowave))
-
-        plt.plot(x, biowave)
-        plt.axis([0, len(biowave), 0, 1])
-        plt.show()
-
-        min = biowave.astype(float).min()
-        max = biowave.astype(float).max()
-        print("min", min)
-        print("max", max)
-
-    elif people_num == 3:
-        # people2의 wave 30개 선정
-        biowave = sj1_csv_people_select[5:]
-        x = range(len(biowave))
-
-        print(biosignal)
-        print(biowave)
-
-        print(x)
-
-        plt.rcParams["figure.figsize"] = (25, 10)
-        plt.plot(x, biowave)
-
-        min = biowave.astype(float).min()
-        print("min", min)
-
-        for i in range(len(biowave)):
-            biowave.iloc[i] = biowave.iloc[i] - min
-
-        max = biowave.astype(float).max()
-        print("max", max)
-
-        for i in range(len(biowave)):
-            biowave.iloc[i] = biowave.iloc[i] / max
-            print(i, " ", biowave.iloc[i])
-
-        x = range(len(biowave))
-
-        plt.plot(x, biowave)
-        plt.axis([0, len(biowave), 0, 1])
-        plt.show()
-
-        min = biowave.astype(float).min()
-        max = biowave.astype(float).max()
-        print("min", min)
-        print("max", max)
-
-    elif people_num == 4:
-        # people2의 wave 30개 선정
-        biowave = sj1_csv_people_select[5:]
-        x = range(len(biowave))
-
-        print(biosignal)
-        print(biowave)
-
-        print(x)
-
-        plt.rcParams["figure.figsize"] = (25, 10)
-        plt.plot(x, biowave)
-
-        min = biowave.astype(float).min()
-        print("min", min)
-
-        for i in range(len(biowave)):
-            biowave.iloc[i] = biowave.iloc[i] - min
-
-        max = biowave.astype(float).max()
-        print("max", max)
-
-        for i in range(len(biowave)):
-            biowave.iloc[i] = biowave.iloc[i] / max
-            print(i, " ", biowave.iloc[i])
-
-        x = range(len(biowave))
-
-        plt.plot(x, biowave)
-        plt.axis([0, len(biowave), 0, 1])
-        plt.show()
-
-        min = biowave.astype(float).min()
-        max = biowave.astype(float).max()
-        print("min", min)
-        print("max", max)
-
-
-    elif people_num == 5:
-        # people2의 wave 30개 선정
-        biowave = sj1_csv_people_select[5:]
-        x = range(len(biowave))
-
-        print(biosignal)
-        print(biowave)
-
-        print(x)
-
-        plt.rcParams["figure.figsize"] = (25, 10)
-        plt.plot(x, biowave)
-
-        min = biowave.astype(float).min()
-        print("min", min)
-
-        for i in range(len(biowave)):
-            biowave.iloc[i] = biowave.iloc[i] - min
-
-        max = biowave.astype(float).max()
-        print("max", max)
-
-        for i in range(len(biowave)):
-            biowave.iloc[i] = biowave.iloc[i] / max
-            print(i, " ", biowave.iloc[i])
-
-        x = range(len(biowave))
-
-        plt.plot(x, biowave)
-        plt.axis([0, len(biowave), 0, 1])
-        plt.show()
-
-        min = biowave.astype(float).min()
-        max = biowave.astype(float).max()
-        print("min", min)
-        print("max", max)
+    SJ1 = SJ1_full_wave(2)
+    SJ2 = SJ1_full_wave(3)
+    SJ1 = SJ1_full_wave(4)
+    SJ1 = SJ1_full_wave(5)
