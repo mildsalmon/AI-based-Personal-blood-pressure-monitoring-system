@@ -50,8 +50,10 @@ class SJ1_full_wave:
 
     def setting(self, people_num):
         if people_num == 1:
-            wave_start_point = 1289
-            wave_end_point = 6505
+            # wave_start_point = 1289
+            # wave_end_point = 6505
+            wave_start_point = 5
+            wave_end_point = 0
         elif people_num == 2:
             wave_start_point = 5
             wave_end_point = 0
@@ -76,39 +78,40 @@ class SJ1_full_wave:
             biowave = self.sj1_csv_people_select[self.wave_start_point:self.wave_end_point]
         x = range(len(biowave))
 
-        print("biosignal :",biosignal)
-        print("biowave :", biowave)
-        print("x :", x)
-
         min = biowave.astype(float).min()
 
         print("min :", min)
-
-        for i in range(len(biowave)):
-            biowave.iloc[i] = biowave.iloc[i] - min
-
+        #
+        # for i in range(len(biowave)):
+        #     biowave.iloc[i] = biowave.iloc[i] - min
+        #
         max = biowave.astype(float).max()
 
         print("max :", max)
-
-        for i in range(len(biowave)):
-            biowave.iloc[i] = biowave.iloc[i] / max
-
-            print(i, " ", biowave.iloc[i])
-
-        x = range(len(biowave))
+        #
+        # for i in range(len(biowave)):
+        #     biowave.iloc[i] = biowave.iloc[i] / max
+        #
+        #     print(i, " ", biowave.iloc[i])
+        #
+        # x = range(len(biowave))
 
         self.x = x
         self.biowave = biowave
 
+        print("biosignal :",biosignal)
+        print("biowave :", biowave)
+        print("x :", x)
+
     def draw(self):
-        plt.rcParams["figure.figsize"] = (25, 10)
+        plt.rcParams["figure.figsize"] = (18, 7)
         plt.plot(self.x, self.biowave)
-        plt.axis([0, len(self.biowave), 0, 1])
+        # plt.axis([0, len(self.biowave), 0, 1])
         plt.show()
 
 if __name__ == "__main__":
 
+    SJ1 = SJ1_full_wave(1)
     SJ1 = SJ1_full_wave(2)
     SJ2 = SJ1_full_wave(3)
     SJ1 = SJ1_full_wave(4)

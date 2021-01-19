@@ -167,7 +167,7 @@ if __name__ == "__main__":
 
         x = range(len(biowave))
 
-        plt.rcParams["figure.figsize"] = (25, 10)
+        plt.rcParams["figure.figsize"] = (18, 7)
         plt.plot(x, biowave)
         plt.axis([0, len(biowave), 0, 1])
         plt.show()
@@ -205,7 +205,7 @@ if __name__ == "__main__":
 
         x = range(len(biowave))
 
-        plt.rcParams["figure.figsize"] = (25, 10)
+        plt.rcParams["figure.figsize"] = (18, 7)
         plt.plot(x, biowave)
         plt.axis([0, len(biowave), 0, 1])
         plt.show()
@@ -243,7 +243,7 @@ if __name__ == "__main__":
 
         x = range(len(biowave))
 
-        plt.rcParams["figure.figsize"] = (25, 10)
+        plt.rcParams["figure.figsize"] = (18, 7)
         plt.plot(x, biowave)
         plt.axis([0, len(biowave), 0, 1])
         plt.show()
@@ -281,7 +281,7 @@ if __name__ == "__main__":
 
         x = range(len(biowave))
 
-        plt.rcParams["figure.figsize"] = (25, 10)
+        plt.rcParams["figure.figsize"] = (18, 7)
         plt.plot(x, biowave)
         plt.axis([0, len(biowave), 0, 1])
         plt.show()
@@ -320,7 +320,7 @@ if __name__ == "__main__":
 
         x = range(len(biowave))
 
-        plt.rcParams["figure.figsize"] = (25, 10)
+        plt.rcParams["figure.figsize"] = (18, 7)
         plt.plot(x, biowave)
         plt.axis([0, len(biowave), 0, 1])
         plt.show()
