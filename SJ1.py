@@ -37,7 +37,7 @@ sj1_csv_people1 = sj1_csv_exam.iloc[0, :]
 sj1_csv_people2 = sj1_csv_exam.iloc[1, :]
 sj1_csv_people3 = sj1_csv_exam.iloc[2, :]
 sj1_csv_people4 = sj1_csv_exam.iloc[3, :]
-# sj1_csv_people5 = sj1_csv_exam.iloc[5, :]
+sj1_csv_people5 = sj1_csv_exam.iloc[4, :]
 
 print(sj1_csv_people1)
 
@@ -196,6 +196,7 @@ for i, point in enumerate(start_point):
     print(biowave.values)
     x = range(len(biowave))
     # print(x)
+    plt.rcParams["figure.figsize"] = (18, 7)
     plt.plot(x, biowave)
     plt.axis([0, len(biowave), 0, 1])
     plt.show()
