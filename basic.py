@@ -20,11 +20,16 @@ X = tf.keras.layers.Input(shape=[256])
 Y = tf.keras.layers.Dense(2)(X)
 
 model = tf.keras.models.Model(X, Y)
-model.compile(loss='mse')
 
-model.fit(X_data, Y_data, epochs=30000)
+model.compile(loss='mean_squared_error',
+              optimizer='adam',
+              metrics=['accuracy'])
 
-print(model.predict(X_data[1:10]))
+model.summary()
+
+model.fit(X_data, Y_data, epochs=200)
+
+print(model.predict(X_data[1:10], batch_size=5))
 print(Y_data[1:10])
 
 print(model.get_weights())
