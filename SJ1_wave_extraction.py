@@ -91,12 +91,18 @@ class Wave_Extraction:
         self.bio_wave_full = self.people_wave[self.total_start:self.total_end]
         self.bio_wave_full.index = range(len(self.bio_wave_full))
 
+        self.BP = bio_signal[2:4]
+        # 판다스 인덱스는 숫자만 인식
+        self.BP.index = [-2, -1]
+        print("BP",type(self.BP))
+        print("BP",self.BP)
+
         print("Bio_Wave_Full : ", self.bio_wave_full)
 
     def set_one_wave(self):
         for i in self.count:
             if i < self.wave_range:
-                A = self.bio_wave_full[i + 50 : i + 200] # ?
+                A = self.bio_wave_full[i + 50 : i + 250] # ?
                 print("A Value : ", A.values)
                 print("i : ", i)
 
@@ -158,6 +164,7 @@ class Wave_Extraction:
             print(point)
             print(self.bio_wave_full[point])
             print(self.bio_wave_full[175:185])
+            print("biowave : ", type(biowave))
             print("biowave : ", biowave)
             len_biowave = len(biowave)
             Max = self.Max_x - len_biowave + 1
@@ -178,16 +185,22 @@ class Wave_Extraction:
             self.one_wave = biowave
             x = range(len(biowave))
 
-            self.bio_wave_list = self.bio_wave_list.append(self.one_wave, ignore_index=True)
+            self.bio_wave_con = pd.concat([self.BP, self.one_wave])
+            print("Te",type(self.bio_wave_con))
+
+            # self.bio_wave_list = self.bio_wave_list.append(self.BP, ignore_index=True)
+            self.bio_wave_list = self.bio_wave_list.append(self.bio_wave_con, ignore_index=True)
+            # print("One Bio wave\n",i,"\n", self.bio_wave_list)
 
             plt.rcParams["figure.figsize"] = (18, 7)
             plt.plot(x, biowave)
             plt.axis([0, len(biowave), 0, 1])
             # plt.show()
-            # plt.savefig('image/wave_{0}.png'.format(i))
+            print("I:",i)
+            plt.savefig('image/wave_{0}.png'.format(i))
 
 
-            plt.cla()
+            # plt.cla()
 
         # self.save_csv()
 
@@ -199,8 +212,8 @@ class Wave_Extraction:
         self.bio_wave_list.to_csv("data/people.csv", mode='a', header=False)
 
 if __name__ == "__main__":
-    # Wave_Extraction(5)
-    Wave_Extraction(1)
+    # Wave_Extraction(1)
     # Wave_Extraction(2)
     # Wave_Extraction(3)
     # Wave_Extraction(4)
+    Wave_Extraction(5)
