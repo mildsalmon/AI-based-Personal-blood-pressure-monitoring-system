@@ -47,6 +47,7 @@ spo2_wave_first = [
 spo2_wave_start = []
 
 select_wave = []
+select_wave_pd = pd.DataFrame()
 
 
 for i, path in enumerate(read_path_list):
@@ -321,27 +322,47 @@ for i, path in enumerate(read_path_list):
 
         plt.plot(x, y, c=color[n%len(color)])
 
-    plt.show()
+    # plt.show()
     plt.cla()
 
-    for o, wave_start in enumerate(start_point):
+    bio_index = []
+
+    for i in range(129):
+        bio_index.append(i)
+
+    for o, wave_start in enumerate(start_point[:-1]):
         select_wave_one = choice_num_1_use.loc[wave_start:end_point[o], 'SpO2 Wave']
 
         select_wave_value = []
 
-        for v in select_wave_one:
-            print("value: ", v)
-            print(v/1300)
-            if v == 1300:
-                input()
-            select_wave_value.append(v/1300)
+        # print(len(select_wave_one))
+        # print(len(select_wave_one)-1)
+        for i in range(len(select_wave_one)):
+            select_wave_one.iloc[i] = select_wave_one.iloc[i]/1300
 
-        select_wave.append(select_wave_value)
+        select_wave_one.index = bio_index
 
-        # 리스트를 줄바꿈하여 출력하려면 * (unpacking operator)를 사용하고 sep으로 개행한다.
-        # print(*select_wave, sep="\n")
+        print("select_wave_oee:",select_wave_one)
+        select_wave_pd = select_wave_pd.append(select_wave_one, ignore_index=True)
+        print("select_wave_pd:",select_wave_pd)
+        # for v in select_wave_one:
+        #     print("value: ", v)
+        #     print(v/1300)
+        #     # 데이터 정규화가 잘 되었는지 확인
+        #     # if v == 1300:
+        #         # input()
+        #     select_wave_value.append(v/1300)
+        #
+        # select_wave_value_Series = pd.Series(select_wave_value)
+        # print("Series: ",select_wave_value_Series)
+        # # select_wave.append(select_wave_value)
+        # # select_wave_pd.append(select_wave, ignore_index=True)
+        # select_wave_pd.append(select_wave_value_Series.to_frame())
+        # # 리스트를 줄바꿈하여 출력하려면 * (unpacking operator)를 사용하고 sep으로 개행한다.
+        # # print(*select_wave, sep="\n")
 
-    print("select_wave : ", *select_wave, sep="\n")
+    # print("select_wave : ", *select_wave, sep="\n")
+    print("select_wave : ", select_wave_pd)
 
 print(spo2_wave_start)
 
