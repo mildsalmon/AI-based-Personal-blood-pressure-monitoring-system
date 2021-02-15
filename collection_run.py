@@ -75,7 +75,7 @@ for i, path in enumerate(read_path_list):
     # print(num_1_pd['SpO2'])
 
     print(type(num_1_pd[['SpO2 Wave', ' SpO2', ' BP_S', ' BP_D', ' TIME']]))
-    num_1_use = num_1_pd[[' SpO2', 'SpO2 Wave', ' BP_S', ' BP_D', ' TIME']]
+    num_1_use = num_1_pd[[' SpO2', 'SpO2 Wave', ' BP_S', ' BP_D', ' TIME', 'height', 'weight']]
 
     print(num_1_use)
 
@@ -95,8 +95,8 @@ for i, path in enumerate(read_path_list):
     plt.rcParams["figure.figsize"] = (18, 7)
     plt.plot(x, num_1_use_tp.loc['SpO2 Wave'])
     plt.axis([0, len(num_1_use_tp.loc['SpO2 Wave']), num_1_use_tp.loc['SpO2 Wave'].min(), num_1_use_tp.loc['SpO2 Wave'].max()])
-    # plt.savefig(plt_save_path + "\\{0}_Full.png".format(num_1_file_name))
-    # plt.show()
+    # plt.savefig(plt_save_path + "\\{0}_1_Full.png".format(num_1_file_name))
+    plt.show()
     plt.cla()
 
     x1 = range(4601)
@@ -105,7 +105,7 @@ for i, path in enumerate(read_path_list):
     plt.plot(x1, num_1_use_tp.iloc[1, 0:4601])
     plt.plot(x2, num_1_use_tp.iloc[1, 4600:len((num_1_use_tp.loc['SpO2 Wave']))-1], 'r')
     plt.axis([0, len(num_1_use_tp.loc['SpO2 Wave']), num_1_use_tp.loc['SpO2 Wave'].min(), num_1_use_tp.loc['SpO2 Wave'].max()])
-    # plt.savefig(plt_save_path + '\\{0}_Full_Red.png'.format(num_1_file_name))
+    # plt.savefig(plt_save_path + '\\{0}_2_Full_Red.png'.format(num_1_file_name))
     # plt.show()
     plt.cla()
 
@@ -116,7 +116,7 @@ for i, path in enumerate(read_path_list):
     x = range(len(choice_num_1_use.loc['SpO2 Wave']))
 
     plt.plot(x, choice_num_1_use.loc['SpO2 Wave'])
-    # plt.savefig(plt_save_path + '\\{0}_Sample_Remove_Back.png'.format(num_1_file_name))
+    # plt.savefig(plt_save_path + '\\{0}_3_Sample_Remove_Back.png'.format(num_1_file_name))
     # plt.show()
     plt.cla()
 
@@ -243,18 +243,19 @@ for i, path in enumerate(read_path_list):
     # plt.show()
     # plt.cla()
 
-    # # min 1
-    # plt.scatter(min_1_idx, min_1, c = 'r')
-    #
-    # # max 1
-    # plt.scatter(max_1_idx, max_1, c = 'b')
-    #
-    # # min 2
-    # plt.scatter(min_2_idx, min_2, c = 'g')
+    # min 1
+    plt.scatter(min_1_idx, min_1, c = 'r')
 
-    # plt.plot(x, choice_num_1_use.loc[:, "SpO2 Wave"])
+    # max 1
+    plt.scatter(max_1_idx, max_1, c = 'b')
+
+    # min 2
+    plt.scatter(min_2_idx, min_2, c = 'g')
+
+    plt.plot(x, choice_num_1_use.loc[:, "SpO2 Wave"])
+    # plt.savefig(plt_save_path + '\\{0}_4_OneWavePoint.png'.format(num_1_file_name))
     # plt.show()
-    # plt.cla()
+    plt.cla()
 
     one_wave_len = range(min_1_idx, min_2_idx+1)
 
@@ -276,7 +277,7 @@ for i, path in enumerate(read_path_list):
     print("half : ", half_one_wave_len)
 
     start_point = [choice_num_1_use.index[0]]
-    end_point = [start_point[0]+128]
+    end_point = [start_point[0]+127]
 
     print("start Point : ", start_point)
     print("end Point : ", end_point)
@@ -299,8 +300,8 @@ for i, path in enumerate(read_path_list):
             max_wave_idx = choice_num_1_use.loc[m:m+one_wave_len, 'SpO2 Wave'].astype(float).idxmax()
 
             start_point.append(max_wave_idx)
-            if max_wave_idx + 128 < choice_num_1_use.index[-1]:
-                end_point.append(max_wave_idx+128)
+            if max_wave_idx + 127 < choice_num_1_use.index[-1]:
+                end_point.append(max_wave_idx+127)
             else:
                 end_point.append(choice_num_1_use.index[-1])
 
@@ -322,12 +323,13 @@ for i, path in enumerate(read_path_list):
 
         plt.plot(x, y, c=color[n%len(color)])
 
+    # plt.savefig(plt_save_path + '\\{0}_5_128_Sampling.png'.format(num_1_file_name))
     # plt.show()
     plt.cla()
 
     bio_index = []
 
-    for i in range(129):
+    for i in range(128):
         bio_index.append(i)
 
     for o, wave_start in enumerate(start_point[:-1]):
@@ -335,6 +337,38 @@ for i, path in enumerate(read_path_list):
 
         select_wave_value = []
 
+        print("Sele:",select_wave_one)
+
+        num_tp = num_1_use_tp.transpose()
+
+        print("num_tp :", num_tp)
+
+        Max_BP_S_idx = num_tp.loc[:,' BP_S'].astype(float).idxmax()
+        # Min_BP_S_pd = choice_num_1_use.loc[:,'BP_S'].min()
+        Max_BP_D_idx = num_tp.loc[:,' BP_D'].astype(float).idxmax()
+        # Min_BP_D_pd = choice_num_1_use.loc[:,'BP_D'].min()
+
+        Max_BP_S = num_tp.loc[Max_BP_S_idx, ' BP_S']
+        Max_BP_D = num_tp.loc[Max_BP_D_idx, ' BP_D']
+
+        Max_BP_Series = pd.Series({'BP_S':Max_BP_S,
+                                     'BP_D':Max_BP_D})
+
+        height = num_tp.loc[0, "height"]
+        weight = num_tp.loc[0, "weight"]
+
+        h_w_Series = pd.Series({'height':height,
+                                'weight':weight})
+
+        # print("BP:",Max_BP_S_pd, Max_BP_D_pd)
+        # print("BP:",type(Max_BP_S_pd), type(Max_BP_D_pd))
+
+        # BP_data = pd.DataFrame([Max_BP_S_pd, Max_BP_D_pd])
+
+        # BP_data = pd.DataFrame(Max_BP_Series)
+        # BP_data = BP_data.transpose()
+
+        # print("BP_Data:\n",BP_data)
         # print(len(select_wave_one))
         # print(len(select_wave_one)-1)
         for i in range(len(select_wave_one)):
@@ -342,9 +376,12 @@ for i, path in enumerate(read_path_list):
 
         select_wave_one.index = bio_index
 
+        select_wave_one = pd.concat([h_w_Series, Max_BP_Series, select_wave_one])
+
+        print(type(select_wave_one))
         print("select_wave_oee:",select_wave_one)
         select_wave_pd = select_wave_pd.append(select_wave_one, ignore_index=True)
-        print("select_wave_pd:",select_wave_pd)
+        print("select_wave_pd:\n",select_wave_pd)
         # for v in select_wave_one:
         #     print("value: ", v)
         #     print(v/1300)
@@ -362,7 +399,10 @@ for i, path in enumerate(read_path_list):
         # # print(*select_wave, sep="\n")
 
     # print("select_wave : ", *select_wave, sep="\n")
-    print("select_wave : ", select_wave_pd)
+    print("select_wave : \n", select_wave_pd)
 
 print(spo2_wave_start)
 
+
+
+select_wave_pd.to_csv("data/collection.csv", mode='w', header=True)

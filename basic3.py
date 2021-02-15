@@ -20,21 +20,26 @@ X_data = data.iloc[:, 3:]
 
 print(Y_data)
 print(Y_data.shape)
+print(type(Y_data))
 
 print(X_data)
 print(X_data.shape)
+print(type(X_data))
 
 Y_data = Y_data.values
 X_data = X_data.values
 
 print(Y_data)
 print(Y_data.shape)
+print(type(Y_data))
 
 print(X_data[1])
 print(X_data.shape)
+print(type(X_data))
 
 X_data[X_data == 0] = 0.0
 print(X_data[1])
+print(type(X_data[1]))
 
 X_train, X_test, Y_train, Y_test = train_test_split(X_data, Y_data, test_size=0.3, random_state=seed)
 
