@@ -32,6 +32,30 @@ class deep_collection_basic:
 
         print(wave,"\n",BP, "\n", HW)
 
+        wave_list = wave.values.tolist()
+
+        print("wave_list", wave_list)
+        # print("wave_list", *wave_list, sep='\n')
+        print("wave_list[0]_len", len(wave_list[0]))
+        print("wave_list_len", len(wave_list))
+        print("wave_list_type", type(wave_list))
+
+        Height = HW.iloc[:, 0]
+        Weight = HW.iloc[:, 1]
+
+        Height = Height.values
+        Weight = Weight.values
+
+        Height_gray_code_list = self.gray_code(Height)
+        Weight_gray_code_list = self.gray_code(Weight)
+
+        print("Height_gray_code_list", Height_gray_code_list)
+        print("Weight_gray_code_list", Weight_gray_code_list)
+
+        HW_gray_code_list = self.list_append(Height_gray_code_list, Weight_gray_code_list)
+
+        print("HW_gray_code_list", HW_gray_code_list)
+
         BP_D = BP.iloc[:, 0]
         BP_S = BP.iloc[:, 1]
 
@@ -42,6 +66,9 @@ class deep_collection_basic:
 
         BP_D_gray_code_list = self.gray_code(BP_D)
         BP_S_gray_code_list = self.gray_code(BP_S)
+
+        print("BP_D_gray_code_list", BP_D_gray_code_list)
+        print("BP_S_gray_code_list", BP_S_gray_code_list)
         # BP_D_series = pd.Series(BP_D_gray_code_list)
         # BP_S_series = pd.Series(BP_S_gray_code_list)
 
@@ -52,11 +79,14 @@ class deep_collection_basic:
         # print(BP_D_gray_code_list.shape)
 
         # X_data = wave.values.astype(float)
-        X = pd.concat([wave, HW], axis=1)
-        print("X:",X)
+        # X = pd.concat([wave, HW], axis=1)
+        # print("X:",X)
 
-        X_data = X.values
-        Y_data = self.list_append(BP_D_gray_code_list, BP_S_gray_code_list)
+        X_np = self.list_append(wave_list, HW_gray_code_list)
+        Y_np = self.list_append(BP_D_gray_code_list, BP_S_gray_code_list)
+
+        X_data = self.make_np_array(X_np)
+        Y_data = self.make_np_array(Y_np)
 
         print("X_data:",X_data)
         print("Y_data:",Y_data)
@@ -68,22 +98,22 @@ class deep_collection_basic:
     def modeling(self, X_train, X_test, Y_train, Y_test):
         model = tf.keras.models.Sequential()
 
-        X_train_len = len(X_train)
-        model.add(tf.keras.layers.Embedding(X_train_len, 130))
-        model.add(tf.keras.layers.Dropout(0.5))
-        model.add(tf.keras.layers.Conv1D(64, 5, padding='valid', activation='relu', strides=1))
-        model.add(tf.keras.layers.MaxPooling1D(pool_size=4))
-        model.add(tf.keras.layers.LSTM(32, activation='relu'))
-        model.add(tf.keras.layers.Dense(16))
-        model.add(tf.keras.layers.Activation('sigmoid'))
-        model.compile(loss='binary_crossentropy',
-                      optimizer='adam',
-                      metrics=['accuracy'])
-        history = model.fit(X_train, Y_train, epochs=20, batch_size=100, validation_data=(X_test, Y_test))
+        # X_train_len = len(X_train)
+        # model.add(tf.keras.layers.Embedding(X_train_len, 144))
+        # model.add(tf.keras.layers.Dropout(0.5))
+        # model.add(tf.keras.layers.Conv1D(64, 5, padding='valid', activation='relu', strides=1))
+        # model.add(tf.keras.layers.MaxPooling1D(pool_size=4))
+        # model.add(tf.keras.layers.LSTM(32, activation='relu'))
+        # model.add(tf.keras.layers.Dense(16))
+        # model.add(tf.keras.layers.Activation('sigmoid'))
+        # model.compile(loss='binary_crossentropy',
+        #               optimizer='adam',
+        #               metrics=['accuracy'])
+        # history = model.fit(X_train, Y_train, epochs=200, batch_size=100, validation_data=(X_test, Y_test))
 
         # X_train_len = len(X_train)
         # # print(X_train_len)
-        # model.add(tf.keras.layers.Embedding(X_train_len, 130))
+        # model.add(tf.keras.layers.Embedding(X_train_len, 144))
         # model.add(tf.keras.layers.LSTM(64, activation='relu'))
         # model.add(tf.keras.layers.Dense(16, activation='softmax'))
         # model.compile(loss='binary_crossentropy',
@@ -91,17 +121,17 @@ class deep_collection_basic:
         #               metrics=['accuracy'])
         # history = model.fit(X_train, Y_train, epochs=20, batch_size=100,validation_data=(X_test, Y_test))
 
-        # model.add(tf.keras.layers.Dense(64, input_dim=130, activation='relu'))
+        model.add(tf.keras.layers.Dense(64, input_dim=144, activation='relu'))
+        model.add(tf.keras.layers.Dropout(0.4))
+        model.add(tf.keras.layers.Dense(64, activation='relu'))
+        model.add(tf.keras.layers.Dropout(0.4))
+        # model.add(tf.keras.layers.Dense(32, activation='sigmoid'))
         # model.add(tf.keras.layers.Dropout(0.4))
-        # model.add(tf.keras.layers.Dense(64, activation='relu'))
-        # model.add(tf.keras.layers.Dropout(0.4))
-        # # model.add(tf.keras.layers.Dense(32, activation='sigmoid'))
-        # # model.add(tf.keras.layers.Dropout(0.4))
-        # model.add(tf.keras.layers.Dense(16, activation='sigmoid'))
-        # model.compile(loss='binary_crossentropy',
-        #               optimizer='adam',
-        #               metrics=['accuracy'])
-        # history = model.fit(X_train, Y_train, epochs=200, batch_size=5, validation_data=(X_test, Y_test))
+        model.add(tf.keras.layers.Dense(16, activation='sigmoid'))
+        model.compile(loss='binary_crossentropy',
+                      optimizer='adam',
+                      metrics=['accuracy'])
+        history = model.fit(X_train, Y_train, epochs=200, batch_size=5, validation_data=(X_test, Y_test))
 
         model.summary()
         print(model.evaluate(X_test, Y_test))
@@ -113,13 +143,19 @@ class deep_collection_basic:
         print(model.predict(X_train[1:2], batch_size=5))
         print(Y_train[1])
 
-        print(X_test[1])
-        print(model.predict(X_test[1:2], batch_size=5))
-        print(Y_test[1])
+        print("X_test[1]\n", X_test[1])
+        print("model.predict(X_test[1:2], batch_size=5)\n",model.predict(X_test[1:2], batch_size=5))
+        print("Y_test[1]\n",Y_test[1])
 
         print("정확도 : ", model.evaluate(X_test, Y_test)[1])
+        print("오차 : ", model.evaluate(X_test, Y_test)[0])
         # print(X_test)
         # print(model.get_weights())
+
+    def make_np_array(self, data):
+        result = np.array(data)
+
+        return result
 
     def list_append(self, BP_D, BP_S):
         result = []
@@ -134,10 +170,11 @@ class deep_collection_basic:
             # print(BP_D[i])
             result.append(BP_D[i] + BP_S[i])
 
-        # print(*result, sep="\n")
+        # print("list_append result", *result, sep="\n")
         # print(len(result))
 
-        result = np.array(result)
+        # result = np.array(result)
+        # print("list_append result", result)
 
         return result
 
@@ -155,7 +192,7 @@ class deep_collection_basic:
         #
         binary_BP_list = self.binary_code(BP)
 
-        print(binary_BP_list)
+        # print(binary_BP_list)
 
         Gray_BP_list = []
 
@@ -170,7 +207,7 @@ class deep_collection_basic:
                     Gray_BP.append(value)
             # print(Gray_BP)
             Gray_BP_list.append(Gray_BP)
-        print(Gray_BP_list)
+        # print(Gray_BP_list)
 
         # Gray_BP_np = np.array(Gray_BP_list)
 
