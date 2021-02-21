@@ -131,7 +131,7 @@ class deep_collection_basic:
         model.compile(loss='binary_crossentropy',
                       optimizer='adam',
                       metrics=['accuracy'])
-        history = model.fit(X_train, Y_train, epochs=200, batch_size=5, validation_data=(X_test, Y_test))
+        history = model.fit(X_train, Y_train, epochs=500, batch_size=5, validation_data=(X_test, Y_test))
 
         model.summary()
         print(model.evaluate(X_test, Y_test))
@@ -208,14 +208,14 @@ class deep_collection_basic:
 
         save_csv = pd.concat([X_test_Series, Y_dec_Series, predict_dec_Serires, per], axis=1)
 
-        print(X_test_Series)
-        print(X_test_Series.shape)
-        print(Y_test_Series)
-        print(Y_test_Series.shape)
-        print(Y_dec_Series)
-        print(Y_dec_Series.shape)
-        print(predict_dec_Serires)
-        print(predict_dec_Serires.shape)
+        # print(X_test_Series)
+        # print(X_test_Series.shape)
+        # print(Y_test_Series)
+        # print(Y_test_Series.shape)
+        # print(Y_dec_Series)
+        # print(Y_dec_Series.shape)
+        # print(predict_dec_Serires)
+        # print(predict_dec_Serires.shape)
 
         print("save_csv : ", save_csv)
 

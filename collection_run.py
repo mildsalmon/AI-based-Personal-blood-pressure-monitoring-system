@@ -96,7 +96,7 @@ for i, path in enumerate(read_path_list):
     plt.plot(x, num_1_use_tp.loc['SpO2 Wave'])
     plt.axis([0, len(num_1_use_tp.loc['SpO2 Wave']), num_1_use_tp.loc['SpO2 Wave'].min(), num_1_use_tp.loc['SpO2 Wave'].max()])
     # plt.savefig(plt_save_path + "\\{0}_1_Full.png".format(num_1_file_name))
-    plt.show()
+    # plt.show()
     plt.cla()
 
     x1 = range(4601)
@@ -372,7 +372,12 @@ for i, path in enumerate(read_path_list):
         # print(len(select_wave_one))
         # print(len(select_wave_one)-1)
         for i in range(len(select_wave_one)):
-            select_wave_one.iloc[i] = select_wave_one.iloc[i]/1300
+            if select_wave_one.iloc[i] > 0:
+                select_wave_one.iloc[i] = select_wave_one.iloc[i]/1300
+            elif select_wave_one.iloc[i] < 0:
+                select_wave_one.iloc[i] = select_wave_one.iloc[i]/1200
+            else:
+                select_wave_one.iloc[i] = 0
 
         select_wave_one.index = bio_index
 
