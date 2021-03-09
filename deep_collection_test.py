@@ -94,8 +94,19 @@ class deep_collection_basic:
 
         print("X_data:",X_data)
         print("Y_data:",Y_data)
+        print("X_data_t:",type(X_data))
+        print("Y_data_t:",type(Y_data))
 
-        X_train, X_test, Y_train, Y_test = train_test_split(X_data, Y_data, test_size=0.3)#, random_state=seed)
+        # X_train, X_test, Y_train, Y_test = train_test_split(X_data, Y_data, test_size=0.3)#, random_state=seed)
+        X_train = X_data[0:588]
+        X_test = X_data[588:]
+        Y_train = Y_data[0:588]
+        Y_test = Y_data[588:]
+
+        print("X_data:",Y_train)
+        print("Y_data:",Y_test)
+        print("X_data_t:",type(Y_train))
+        print("Y_data_t:",type(Y_test))
 
         self.modeling(X_train, X_test, Y_train, Y_test)
 
@@ -126,7 +137,7 @@ class deep_collection_basic:
         # history = model.fit(X_train, Y_train, epochs=20, batch_size=100,validation_data=(X_test, Y_test))
 
         epoch = 200
-        batch_size = 5
+        batch_size = 1
 
         model.add(tf.keras.layers.Dense(64, input_dim=144, activation='relu'))
         model.add(tf.keras.layers.Dropout(0.4))

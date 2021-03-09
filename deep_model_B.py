@@ -47,6 +47,9 @@ class deep_collection_basic:
         Height = HW.iloc[:, 0]
         Weight = HW.iloc[:, 1]
 
+        HW_list = HW.values.tolist()
+        print(HW_list)
+
         Height = Height.values
         Weight = Weight.values
 
@@ -59,6 +62,8 @@ class deep_collection_basic:
         HW_gray_code_list = self.list_append(Height_gray_code_list, Weight_gray_code_list)
 
         print("HW_gray_code_list", HW_gray_code_list)
+
+        BP_DS = BP.iloc[:,0:2]
 
         BP_D = BP.iloc[:, 0]
         BP_S = BP.iloc[:, 1]
@@ -86,8 +91,8 @@ class deep_collection_basic:
         # X = pd.concat([wave, HW], axis=1)
         # print("X:",X)
 
-        X_np = self.list_append(wave_list, HW_gray_code_list)
-        Y_np = self.list_append(BP_D_gray_code_list, BP_S_gray_code_list)
+        X_np = self.list_append(wave_list, HW_list)
+        Y_np = BP_DS
 
         X_data = self.make_np_array(X_np)
         Y_data = self.make_np_array(Y_np)
@@ -128,14 +133,14 @@ class deep_collection_basic:
         epoch = 200
         batch_size = 5
 
-        model.add(tf.keras.layers.Dense(64, input_dim=144, activation='relu'))
+        model.add(tf.keras.layers.Dense(64, input_dim=130, activation='relu'))
         model.add(tf.keras.layers.Dropout(0.4))
         model.add(tf.keras.layers.Dense(64, activation='relu'))
         model.add(tf.keras.layers.Dropout(0.4))
         # model.add(tf.keras.layers.Dense(32, activation='sigmoid'))
         # model.add(tf.keras.layers.Dropout(0.4))
-        model.add(tf.keras.layers.Dense(16, activation='sigmoid'))
-        model.compile(loss='binary_crossentropy',
+        model.add(tf.keras.layers.Dense(2, activation='relu'))
+        model.compile(loss='mean_absolute_error',
                       optimizer='adam',
                       metrics=['accuracy'])
         history = model.fit(X_train, Y_train, epochs=epoch, batch_size=batch_size, validation_data=(X_test, Y_test))
@@ -153,7 +158,7 @@ class deep_collection_basic:
         predict = model.predict(X_test[:], batch_size=batch_size)
         Y_test_use = Y_test[:]
 
-        print("X_test[1] : \n", X_test[1:10])
+        print("X_test[1] : \n", X_test[0:10])
         print("model.predict(X_test[1:2], batch_size=5) : \n", predict)
         # print("type(predict) : \n", type(predict))
         print("Y_test[1] : \n",Y_test_use)
@@ -161,25 +166,25 @@ class deep_collection_basic:
         predict_list = self.np_to_list(predict)
         Y_test_use_list = self.np_to_list(Y_test_use)
 
-        gray_list = self.predict_to_gray(predict_list)
-        Y_test_use_gray_list = self.predict_to_gray(Y_test_use_list)
+        # gray_list = self.predict_to_gray(predict_list)
+        # Y_test_use_gray_list = self.predict_to_gray(Y_test_use_list)
 
         # print("predict_list :", predict_list)
-        print("gray_list :\n", *gray_list, sep='\n')
+        # print("gray_list :\n", *gray_list, sep='\n')
 
-        print("matching per : ", self.matching_per(self.np_to_list(Y_test_use), gray_list))
+        # print("matching per : ", self.matching_per(self.np_to_list(Y_test_use), gray_list))
 
-        BP_D_binary_code, BP_S_binary_code = self.binary_code(gray_list)
+        BP_D_binary_code, BP_S_binary_code = self.binary_code(predict_list)
         # print("BP_D_binary_code :\n", *BP_D_binary_code, sep='\n')
         # print("BP_S_binary_code :\n", *BP_S_binary_code, sep='\n')
 
-        BP_D_Y_test, BP_S_Y_test = self.binary_code(Y_test_use_gray_list)
+        BP_D_Y_test, BP_S_Y_test = self.binary_code(Y_test_use_list)
 
-        BP_D_dec = self.binary_to_dec(BP_D_binary_code)
-        BP_S_dec = self.binary_to_dec(BP_S_binary_code)
+        BP_D_dec = BP_D_binary_code
+        BP_S_dec = BP_S_binary_code
 
-        BP_D_Y_dec = self.binary_to_dec(BP_D_Y_test)
-        BP_S_Y_dec = self.binary_to_dec(BP_S_Y_test)
+        BP_D_Y_dec = BP_D_Y_test
+        BP_S_Y_dec = BP_S_Y_test
 
         print("\n====Y 값====\n")
         print("BP_D_Y_dec", BP_D_Y_dec)
@@ -244,7 +249,7 @@ class deep_collection_basic:
         Y_test_Series = pd.DataFrame(Y_test)
         Y_dec_Series = pd.DataFrame([BP_D_Y_dec, BP_S_Y_dec], index=['real_BP_D', 'real_BP_S'])
         predict_dec_Serires = pd.DataFrame([BP_D_dec, BP_S_dec], index=['predict_BP_D', 'predict_BP_S'])
-        per = pd.DataFrame([self.matching_per(self.np_to_list(Y_test_use), gray_list)], index=['gray code per'])
+        per = pd.DataFrame([self.matching_per(self.np_to_list(Y_test_use), predict_list)], index=['gray code per'])
 
         Y_dec_Series = Y_dec_Series.transpose()
         predict_dec_Serires = predict_dec_Serires.transpose()
@@ -266,7 +271,7 @@ class deep_collection_basic:
         self.save_list_as_csv(save_csv)
 
     def save_list_as_csv(self, save):
-        save.to_csv("data/prediction.csv", mode='w', header=True)
+        save.to_csv("data/prediction_B.csv", mode='w', header=True)
 
     def matching_per(self, real_data, predict_data):
         if len(real_data[0]) != len(predict_data[0]):
@@ -383,7 +388,7 @@ class deep_collection_basic:
             BP_D = []
             BP_S = []
             for j, code in enumerate(gray_code):
-                if j < 8:
+                if j < 1:
                     BP_D.append(code)
                 else:
                     BP_S.append(code)

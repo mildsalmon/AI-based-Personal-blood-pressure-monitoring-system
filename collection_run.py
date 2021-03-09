@@ -22,33 +22,34 @@ spo2 시작할때 발생하는 이상치를 제거하는 작업
 학습에 사용할 데이터의 시작지점을 대략적으로 표시한 것
 수동 작업 -> 추후 자동화 예정
 """
-spo2_wave_first = [
-    [850, 882],
-    [269, 282],
-    [15, 50],
-    [176, 217],
-    [705, 745],
-    [11, 46],
-    [31, 50],
-    [96, 125],
-    [13, 35],
-    [56, 90],
-    [39, 52],
-    [6, 22],
-    [197, 220],
-    [12, 47],
-    [425, 440],
-    [417, 430],
-    [697, 731],
-    [36, 68],
-    [1068, 1084],
-    [2156, 2194],
-    [678, 712],
-    [31, 47],
-    [40, 64],
-    [32, 69],
-    [19, 35],
-]
+# spo2_wave_first = [
+#     [850, 882],
+#     [269, 282],
+#     [15, 50],
+#     [176, 217],
+#     [705, 745],
+#     [11, 46],
+#     [31, 50],
+#     [96, 125],
+#     [13, 35],
+#     [56, 90],
+#     [39, 52],
+#     [6, 22],
+#     [197, 220],
+#     [12, 47],
+#     [425, 440],
+#     [417, 430],
+#     [697, 731],
+#     [36, 68],
+#     [1068, 1084],
+#     [2156, 2194],
+#     [678, 712],
+#     [31, 47],
+#     [40, 64],
+#     [32, 69],
+#     [19, 35],
+# ]
+spo2_wave_first = [0, 60]
 
 """
 1개의 waveform에서 학습을 위해 시작하는 지점(1개의 waveform에서 최고점)을 선택해서 spo2_wave_start 리스트에 추가함
@@ -136,7 +137,7 @@ for i, path in enumerate(read_path_list):
 
     choice_num_1_use = choice_num_1_use.transpose()
     # for i in range(4600):
-    first_interval = choice_num_1_use.iloc[spo2_wave_first[i][0]: spo2_wave_first[i][1],:]
+    first_interval = choice_num_1_use.iloc[spo2_wave_first[0]: spo2_wave_first[1],:]
 
     print(first_interval)
 
@@ -299,10 +300,10 @@ for i, path in enumerate(read_path_list):
     # # min 2
     # plt.scatter(min_2_idx, min_2, c = 'g')
     #
-    # plt.plot(x, choice_num_1_use.loc[:, "SpO2 Wave"])
-    # # plt.savefig(plt_save_path + '\\{0}_4_OneWavePoint.png'.format(num_1_file_name))
-    # # plt.show()
-    # plt.cla()
+    plt.plot(x, choice_num_1_use.loc[:, "SpO2 Wave"])
+    # plt.savefig(plt_save_path + '\\{0}_4_OneWavePoint.png'.format(num_1_file_name))
+    # plt.show()
+    plt.cla()
 
     one_wave_len = range(min_1_idx, min_2_idx+1)
 
@@ -476,6 +477,14 @@ for i, path in enumerate(read_path_list):
         plt.plot(x, y, c=color[o%len(color)])
 
         """
+        Waveform 값에서 전체 Waveform 평균 빼기
+        """
+        for s in range(len(select_wave_one)):
+            select_wave_one.iloc[s] = select_wave_one.iloc[s] - spo2_wave_all_avg
+
+        print("SELE : ", select_wave_one)
+
+        """
         이전에 하던 정규화
         """
         # for q in range(len(select_wave_one)):
@@ -491,6 +500,12 @@ for i, path in enumerate(read_path_list):
         """
         for q in range(len(select_wave_one)):
             select_wave_one.iloc[q] = select_wave_one.iloc[q]/1024
+
+        # plt.cla()
+        # plt.plot(range(len(select_wave_one)), select_wave_one)
+        # plt.axis([0, 127, -1, 1])
+        # plt.show()
+        # plt.savefig(plt_save_path + '\\{0}_11_{1}_each_waveform.png'.format(num_1_file_name, o))
 
         select_wave_one.index = bio_index
 
@@ -525,7 +540,7 @@ for i, path in enumerate(read_path_list):
     # plt.savefig(plt_save_path + '\\{0}_7_wave_all_avg_box.png'.format(num_1_file_name))
     # plt.savefig(plt_save_path + '\\{0}_8_preprocessing.png'.format(num_1_file_name))
     # plt.savefig(plt_save_path + '\\{0}_9_final_sampling_full.png'.format(num_1_file_name))
-    plt.savefig(plt_save_path + '\\{0}_10_final_sampling_non_full.png'.format(num_1_file_name))
+    # plt.savefig(plt_save_path + '\\{0}_10_final_sampling_non_full.png'.format(num_1_file_name))
     # plt.show()
     plt.cla()
 
@@ -536,4 +551,4 @@ print(spo2_wave_start)
 
 
 
-# select_wave_pd.to_csv("data/collection.csv", mode='w', header=True)
+select_wave_pd.to_csv("data/collection.csv", mode='w', header=True)

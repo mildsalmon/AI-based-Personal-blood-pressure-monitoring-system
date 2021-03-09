@@ -50,15 +50,15 @@ class deep_collection_basic:
         Height = Height.values
         Weight = Weight.values
 
-        Height_gray_code_list = self.gray_code(Height)
-        Weight_gray_code_list = self.gray_code(Weight)
+        Height_binary_code_list = self.dec_to_binary_code(Height)
+        Weight_binary_code_list = self.dec_to_binary_code(Weight)
 
-        print("Height_gray_code_list", Height_gray_code_list)
-        print("Weight_gray_code_list", Weight_gray_code_list)
+        print("Height_binary_code_list", Height_binary_code_list)
+        print("Weight_binary_code_list", Weight_binary_code_list)
 
-        HW_gray_code_list = self.list_append(Height_gray_code_list, Weight_gray_code_list)
+        HW_binary_code_list = self.list_append(Height_binary_code_list, Weight_binary_code_list)
 
-        print("HW_gray_code_list", HW_gray_code_list)
+        print("HW_binary_code_list", HW_binary_code_list)
 
         BP_D = BP.iloc[:, 0]
         BP_S = BP.iloc[:, 1]
@@ -68,11 +68,11 @@ class deep_collection_basic:
 
         print(type(BP_D))
 
-        BP_D_gray_code_list = self.gray_code(BP_D)
-        BP_S_gray_code_list = self.gray_code(BP_S)
+        BP_D_binary_code_list = self.dec_to_binary_code(BP_D)
+        BP_S_binary_code_list = self.dec_to_binary_code(BP_S)
 
-        print("BP_D_gray_code_list", BP_D_gray_code_list)
-        print("BP_S_gray_code_list", BP_S_gray_code_list)
+        print("BP_D_binary_code_list", BP_D_binary_code_list)
+        print("BP_S_binary_code_list", BP_S_binary_code_list)
         # BP_D_series = pd.Series(BP_D_gray_code_list)
         # BP_S_series = pd.Series(BP_S_gray_code_list)
 
@@ -86,8 +86,8 @@ class deep_collection_basic:
         # X = pd.concat([wave, HW], axis=1)
         # print("X:",X)
 
-        X_np = self.list_append(wave_list, HW_gray_code_list)
-        Y_np = self.list_append(BP_D_gray_code_list, BP_S_gray_code_list)
+        X_np = self.list_append(wave_list, HW_binary_code_list)
+        Y_np = self.list_append(BP_D_binary_code_list, BP_S_binary_code_list)
 
         X_data = self.make_np_array(X_np)
         Y_data = self.make_np_array(Y_np)
@@ -126,7 +126,6 @@ class deep_collection_basic:
         # history = model.fit(X_train, Y_train, epochs=20, batch_size=100,validation_data=(X_test, Y_test))
 
         epoch = 200
-        batch_size = 5
 
         model.add(tf.keras.layers.Dense(64, input_dim=144, activation='relu'))
         model.add(tf.keras.layers.Dropout(0.4))
@@ -138,22 +137,24 @@ class deep_collection_basic:
         model.compile(loss='binary_crossentropy',
                       optimizer='adam',
                       metrics=['accuracy'])
-        history = model.fit(X_train, Y_train, epochs=epoch, batch_size=batch_size, validation_data=(X_test, Y_test))
+        history = model.fit(X_train, Y_train, epochs=epoch, batch_size=5, validation_data=(X_test, Y_test))
 
         model.summary()
         print(model.evaluate(X_test, Y_test))
 
-        print(history.history['val_loss'])
-        print(history.history['loss'])
+        print('val_loss :', history.history['val_loss'])
+        print('loss : ', history.history['loss'])
+        print('val_acc :', history.history['val_accuracy'])
+        print('acc : ', history.history['accuracy'])
 
         # print(X_train[1:10])
-        print(model.predict(X_train[1:2], batch_size=batch_size))
+        print(model.predict(X_train[1:2], batch_size=5))
         print(Y_train[1])
 
-        predict = model.predict(X_test[:], batch_size=batch_size)
+        predict = model.predict(X_test[:], batch_size=5)
         Y_test_use = Y_test[:]
 
-        print("X_test[1] : \n", X_test[1:10])
+        print("X_test[1] : \n", X_test[0:10])
         print("model.predict(X_test[1:2], batch_size=5) : \n", predict)
         # print("type(predict) : \n", type(predict))
         print("Y_test[1] : \n",Y_test_use)
@@ -161,11 +162,11 @@ class deep_collection_basic:
         predict_list = self.np_to_list(predict)
         Y_test_use_list = self.np_to_list(Y_test_use)
 
-        gray_list = self.predict_to_gray(predict_list)
-        Y_test_use_gray_list = self.predict_to_gray(Y_test_use_list)
+        gray_list = self.predict_to_binary(predict_list)
+        Y_test_use_gray_list = self.predict_to_binary(Y_test_use_list)
 
         # print("predict_list :", predict_list)
-        print("gray_list :\n", *gray_list, sep='\n')
+        print("binary_list :\n", *gray_list, sep='\n')
 
         print("matching per : ", self.matching_per(self.np_to_list(Y_test_use), gray_list))
 
@@ -226,7 +227,7 @@ class deep_collection_basic:
 
         plt.plot(x_len, y_vloss, c='red', label='테스트셋에 대한 결과')
         plt.plot(x_len, y_loss, c='blue', label='학습셋에 대한 결과')
-        plt.legend(loc='center right')
+        plt.legend(loc='upper right')
         plt.xlabel("epoch")
         plt.ylabel("오차율")
         plt.title("테스트셋과 학습셋의 오차율 비교")
@@ -234,7 +235,7 @@ class deep_collection_basic:
 
         plt.plot(x_len, y_vacc, c='red', label='테스트셋에 대한 결과')
         plt.plot(x_len, y_acc, c='blue', label='학습셋에 대한 결과')
-        plt.legend(loc='center right')
+        plt.legend(loc='lower right')
         plt.xlabel("epoch")
         plt.ylabel("정확도")
         plt.title("테스트셋과 학습셋의 정확도 비교")
@@ -266,7 +267,7 @@ class deep_collection_basic:
         self.save_list_as_csv(save_csv)
 
     def save_list_as_csv(self, save):
-        save.to_csv("data/prediction.csv", mode='w', header=True)
+        save.to_csv("data/prediction_C.csv", mode='w', header=True)
 
     def matching_per(self, real_data, predict_data):
         if len(real_data[0]) != len(predict_data[0]):
@@ -290,7 +291,7 @@ class deep_collection_basic:
 
         return list
 
-    def predict_to_gray(self, predict_list):
+    def predict_to_binary(self, predict_list):
         binary_list = []
 
         for predict in predict_list:
@@ -387,8 +388,8 @@ class deep_collection_basic:
                     BP_D.append(code)
                 else:
                     BP_S.append(code)
-            BP_D_binary_code.append(self.gray_to_binary(BP_D))
-            BP_S_binary_code.append(self.gray_to_binary(BP_S))
+            BP_D_binary_code.append(BP_D)
+            BP_S_binary_code.append(BP_S)
 
         return BP_D_binary_code, BP_S_binary_code
 
