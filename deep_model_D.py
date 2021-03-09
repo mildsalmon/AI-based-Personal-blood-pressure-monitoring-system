@@ -153,7 +153,7 @@ class deep_collection_basic:
         predict = model.predict(X_test[:], batch_size=batch_size)
         Y_test_use = Y_test[:]
 
-        print("X_test[1] : \n", X_test[1:10])
+        print("X_test[1] : \n", X_test[0:10])
         print("model.predict(X_test[1:2], batch_size=5) : \n", predict)
         # print("type(predict) : \n", type(predict))
         print("Y_test[1] : \n",Y_test_use)
