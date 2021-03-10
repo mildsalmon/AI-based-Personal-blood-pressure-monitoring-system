@@ -23,7 +23,7 @@ class deep_collection_basic:
 
         plt.rcParams['font.family'] = 'NanumSquare'
 
-        path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data\collection.csv")
+        path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../data/collection.csv")
 
         print(path)
 
@@ -267,7 +267,9 @@ class deep_collection_basic:
         self.save_list_as_csv(save_csv)
 
     def save_list_as_csv(self, save):
-        save.to_csv("data/prediction_C.csv", mode='w', header=True)
+        path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../data/prediction_C.csv")
+
+        save.to_csv(path, mode='w', header=True)
 
     def matching_per(self, real_data, predict_data):
         if len(real_data[0]) != len(predict_data[0]):

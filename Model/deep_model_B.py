@@ -23,7 +23,7 @@ class deep_collection_basic:
 
         plt.rcParams['font.family'] = 'NanumSquare'
 
-        path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data\collection.csv")
+        path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../data/collection.csv")
 
         print(path)
 
@@ -46,6 +46,9 @@ class deep_collection_basic:
 
         Height = HW.iloc[:, 0]
         Weight = HW.iloc[:, 1]
+
+        HW_list = HW.values.tolist()
+        print(HW_list)
 
         Height = Height.values
         Weight = Weight.values
@@ -88,7 +91,7 @@ class deep_collection_basic:
         # X = pd.concat([wave, HW], axis=1)
         # print("X:",X)
 
-        X_np = wave_list
+        X_np = self.list_append(wave_list, HW_list)
         Y_np = BP_DS
 
         X_data = self.make_np_array(X_np)
@@ -130,7 +133,7 @@ class deep_collection_basic:
         epoch = 200
         batch_size = 5
 
-        model.add(tf.keras.layers.Dense(64, input_dim=128, activation='relu'))
+        model.add(tf.keras.layers.Dense(64, input_dim=130, activation='relu'))
         model.add(tf.keras.layers.Dropout(0.4))
         model.add(tf.keras.layers.Dense(64, activation='relu'))
         model.add(tf.keras.layers.Dropout(0.4))
@@ -268,7 +271,9 @@ class deep_collection_basic:
         self.save_list_as_csv(save_csv)
 
     def save_list_as_csv(self, save):
-        save.to_csv("data/prediction_A.csv", mode='w', header=True)
+        path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../data/prediction_B.csv")
+
+        save.to_csv(path, mode='w', header=True)
 
     def matching_per(self, real_data, predict_data):
         if len(real_data[0]) != len(predict_data[0]):
