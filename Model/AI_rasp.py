@@ -276,7 +276,7 @@ class BpMonitoringSystemByAi:
 
         select_wave_full_avg_list.append(select_wave_one_avg_list)
 
-        select_wave_pd.to_csv("data/rp_text.csv", mode='w', header=True)
+        select_wave_pd.to_csv("rp_text.csv", mode='w', header=True)
 
     def learn(self, dir_name):
         """
@@ -628,6 +628,8 @@ class BpMonitoringSystemByAi:
 
         # self.save_prediction_data(save_csv, "prediction_new.csv")
 
+        return BP_D_dec, BP_S_dec
+
     def postprocess(self, predict):
         """
         후처리 과정
@@ -697,7 +699,7 @@ class BpMonitoringSystemByAi:
             인공지능 모델
         :return:
         """
-        model.save('data\\model_save.h5')
+        model.save('model_save.h5')
 
     def load_model(self):
         """
@@ -705,7 +707,7 @@ class BpMonitoringSystemByAi:
 
         :return:
         """
-        model = load_model('data\\model_save.h5')
+        model = load_model('model_save.h5')
 
         return model
 
@@ -719,7 +721,7 @@ class BpMonitoringSystemByAi:
             파일 경로는 ./data로 고정
         :return:
         """
-        path = self.set_path("data\\"+file_name)
+        path = self.set_path(file_name)
 
         save.to_csv(path, mode='w', header=True)
 
@@ -977,29 +979,41 @@ if __name__ == "__main__":
     # A.learn("data\\collection.csv")
     # A.predict("data\\unknown.csv")
 
+### 학습 부분에서 데이터를 트레이닝 셋과 테스트 셋으로 나눈 것
+
+    # 학습 : 28개 수집 데이터
+    # 예측 : 28개 검증 데이터
+    # 정확도 : 0.9466
+    # 오차 : 0.1451
+    # A.monitoring_preprocess("data/Collection", "data/info.csv")
+    # A.learn("data\\collection.csv")
+    # A.predict("data/collection_new.csv")
+
     # 학습 : 28개 수집 데이터
     # 예측 : 100개 검증 데이터
-    # 정확도 : 0.7219
-    # 오차 : 1.8550
+    # 정확도 : 0.7281
+    # 오차 : 2.0251
     # A.monitoring_preprocess("data/Collection/new_100", "data/info_100.csv")
     # A.learn("data\\collection.csv")
     # A.predict("data/collection_new.csv")
 
     # 학습 : 100개 검증 데이터
     # 예측 : 28개 수집 데이터
-    # 정확도 : 0.7045
-    # 오차 : 0.9545
+    # 정확도 : 0.6974
+    # 오차 : 0.7929
     # A.monitoring_preprocess("data/Collection/new_100", "data/info_100.csv")
     # A.learn("data/collection_new.csv")
     # A.predict("data/collection.csv")
 
     # 학습 : 100개 검증 데이터
     # 예측 : 100개 검증 데이터
-    # 정확도 : 0.8349
-    # 오차 : 0.3263
+    # 정확도 : 0.8289
+    # 오차 : 0.3342
     # A.monitoring_preprocess("data/Collection/new_100", "data/info_100.csv")
     # A.learn("data/collection_new.csv")
     # A.predict("data/collection_new.csv")
+
+### 학습 부분에서 데이터를 전부 트레이닝 셋으로 만듬
 
     # 라즈베리파이 실험
     # A.rp_preprocess("data/ppg.csv", "data/info_rp.csv")

@@ -27,7 +27,7 @@ class BpMonitoringSystemByAi:
 
         plt.rcParams['font.family'] = 'NanumSquare'
 
-        self.epoch = 200
+        self.epoch = 2000
         self.batch_size = 5
 
     def rp_preprocess(self):
@@ -74,6 +74,7 @@ class BpMonitoringSystemByAi:
 
         spo2_wave_all_avg_list = []
         select_wave_full_avg_list = []
+        end = []
 
         for i, path in enumerate(read_path_list):
             num_1_file_name = path
@@ -382,6 +383,7 @@ class BpMonitoringSystemByAi:
 
             select_wave_one_avg_list = []
 
+            end.append(start_point[-2])
             for o, wave_start in enumerate(start_point[:-1]):
                 select_wave_one = copy.deepcopy(choice_num_1_use.loc[wave_start:end_point[o], 'SpO2 Wave'])
 
@@ -498,7 +500,8 @@ class BpMonitoringSystemByAi:
         print("spo2_wave_all_avg_list :", spo2_wave_all_avg_list)
         print("select_wave_full_avg_list :", select_wave_full_avg_list)
         #
-        # print(spo2_wave_start)
+        print("start :", spo2_wave_start)
+        print("end :", end)
 
         select_wave_pd.to_csv("data/collection.csv", mode='w', header=True)
 
@@ -680,7 +683,156 @@ class BpMonitoringSystemByAi:
 
         self.save_prediction_data(save_csv, "prediction_learn.csv")
 
+    def learn2(self, dir_name):
+        """
+        인공지능 모델 학습을 위한 함수
+        :param dir_name:
+            예측할 데이터가 있는 디렉터리명
+            ex) data\\collection.csv
+        :return:
+        """
+        path = self.set_path(dir_name)
+
+        # print(path)
+
+        csv_data = self.load_collection_data(path=path)
+        # print(csv_data)
+
+        wave = csv_data.iloc[:,0:128]
+        BP = csv_data.iloc[:,-4:-2]
+        HW = csv_data.iloc[:,-2:]
+
+        # print(wave,"\n",BP, "\n", HW)
+
+        """
+        PPG 정보를 list로 변환
+        """
+        wave_list = wave.values.tolist()
+
+        # print("wave_list", wave_list)
+        # # print("wave_list", *wave_list, sep='\n')
+        # print("wave_list[0]_len", len(wave_list[0]))
+        # print("wave_list_len", len(wave_list))
+        # print("wave_list_type", type(wave_list))
+
+        """
+        키, 몸무게를 각 변수로 분리
+        """
+        Height = HW.iloc[:, 0]
+        Weight = HW.iloc[:, 1]
+
+        Height = Height.values
+        Weight = Weight.values
+
+        # 키, 몸무게(십진수 데이터)를 gray code로 변환
+        Height_gray_code_list = self.convert_DEC_to_GrayCode(Height)
+        Weight_gray_code_list = self.convert_DEC_to_GrayCode(Weight)
+
+        # print("Height_gray_code_list", Height_gray_code_list)
+        # print("Weight_gray_code_list", Weight_gray_code_list)
+
+        # 분리한 키, 몸무게의 gray code를 합침
+        HW_gray_code_list = self.list_append(Height_gray_code_list, Weight_gray_code_list)
+
+        # print("HW_gray_code_list", HW_gray_code_list)
+
+        """
+        혈압 정보를 수축기 혈압과 이완기 혈압으로 구분
+        """
+        BP_D = BP.iloc[:, 0]
+        BP_S = BP.iloc[:, 1]
+
+        BP_D = BP_D.values
+        BP_S = BP_S.values
+
+        # print(type(BP_D))
+
+        BP_D_gray_code_list = self.convert_DEC_to_GrayCode(BP_D)
+        BP_S_gray_code_list = self.convert_DEC_to_GrayCode(BP_S)
+
+        # print("BP_D_gray_code_list", BP_D_gray_code_list)
+        # print("BP_S_gray_code_list", BP_S_gray_code_list)
+
+        X_np = self.list_append(wave_list, HW_gray_code_list)
+        Y_np = self.list_append(BP_D_gray_code_list, BP_S_gray_code_list)
+
+        X_data = self.make_np_array(X_np)
+        Y_data = self.make_np_array(Y_np)
+
+        # print("X_data:",X_data)
+        # print("Y_data:",Y_data)
+
+        model, history = self.model2(X_data, Y_data)
+
+        model.summary()
+
+        print("정확도 : ", model.evaluate(X_data, Y_data)[1])
+        print("오차 : ", model.evaluate(X_data, Y_data)[0])
+
     def model(self, X_train, X_test, Y_train, Y_test):
+        """
+        학습에 사용하는 인공지능 모델
+        :param X_train:
+        :param X_test:
+        :param Y_train:
+        :param Y_test:
+        :return:
+        """
+        model = tf.keras.models.Sequential()
+
+        # X_train_len = len(X_train)
+        # model.add(tf.keras.layers.Embedding(X_train_len, 144))
+        # model.add(tf.keras.layers.Dropout(0.5))
+        # model.add(tf.keras.layers.Conv1D(64, 5, padding='valid', activation='relu', strides=1))
+        # model.add(tf.keras.layers.MaxPooling1D(pool_size=4))
+        # model.add(tf.keras.layers.LSTM(32, activation='relu'))
+        # model.add(tf.keras.layers.Dense(16))
+        # model.add(tf.keras.layers.Activation('sigmoid'))
+        # model.compile(loss='binary_crossentropy',
+        #               optimizer='adam',
+        #               metrics=['accuracy'])
+        # history = model.fit(X_train, Y_train, epochs=200, batch_size=100, validation_data=(X_test, Y_test))
+
+        # X_train_len = len(X_train)
+        # # print(X_train_len)
+        # model.add(tf.keras.layers.Embedding(X_train_len, 144))
+        # model.add(tf.keras.layers.LSTM(64, activation='relu'))
+        # model.add(tf.keras.layers.Dense(16, activation='softmax'))
+        # model.compile(loss='binary_crossentropy',
+        #               optimizer='adam',
+        #               metrics=['accuracy'])
+        # history = model.fit(X_train, Y_train, epochs=20, batch_size=100,validation_data=(X_test, Y_test))
+
+        model.add(tf.keras.layers.Dense(64, input_dim=144, activation='sigmoid'))
+        model.add(tf.keras.layers.Dropout(0.4))
+        model.add(tf.keras.layers.Dense(64, activation='sigmoid'))
+        model.add(tf.keras.layers.Dropout(0.4))
+        model.add(tf.keras.layers.Dense(16, activation='sigmoid'))
+
+        model.compile(loss='binary_crossentropy',
+                      optimizer='adam',
+                      metrics=['accuracy'])
+        history = model.fit(X_train, Y_train, epochs=self.epoch, batch_size=self.batch_size, validation_data=(X_test, Y_test))
+
+        self.save_model(model)
+
+        # from keras.utils.vis_utils import plot_model
+        # # os.environ["PATH"] += os.pathsep + 'C:\python\anaconda3_64\envs\Ai_2.0_20.12.31\Lib\site-packages\graphviz\bin'
+        # plot_model(model, to_file='model_plot.png', show_shapes=True, show_layer_names=True)
+        #
+        # from keras.utils import plot_model
+        # plot_model(model, to_file='model.png')
+        #
+        # from keras import backend as K
+        # trainable_count = int(np.sum([K.count_params(p) for p in set(model.trainable_weights)]))
+        # non_trainable_count = int(np.sum([K.count_params(p) for p in set(model.non_trainable_weights)]))
+        # print('Total params: {:,}'.format(trainable_count + non_trainable_count))
+        # print('Trainable params: {:,}'.format(trainable_count))
+        # print('Non-trainable params: {:,}'.format(non_trainable_count))
+
+        return model, history
+
+    def model2(self, X_train, Y_train):
         """
         학습에 사용하는 인공지능 모델
         :param X_train:
@@ -723,7 +875,7 @@ class BpMonitoringSystemByAi:
         model.compile(loss='binary_crossentropy',
                       optimizer='adam',
                       metrics=['accuracy'])
-        history = model.fit(X_train, Y_train, epochs=self.epoch, batch_size=self.batch_size, validation_data=(X_test, Y_test))
+        history = model.fit(X_train, Y_train, epochs=self.epoch, batch_size=self.batch_size)
 
         self.save_model(model)
 
@@ -1056,6 +1208,7 @@ class BpMonitoringSystemByAi:
             predict_max = max(predict)
             predict_min = min(predict)
             half = (predict_max - predict_min)/2
+            half = 0.5
 
             predict_to_binary = []
 
@@ -1214,6 +1367,23 @@ if __name__ == "__main__":
 
     # A.monitoring_preprocess("data/Collection/new_100", "data/info_100.csv")
     A.learn("data\\collection.csv")
-    # A.predict("data\\unknown.csv")
+    A.predict("data\\unknown.csv")
 
     # A.predict("data/collection_new.csv")
+
+    # A.monitoring_preprocess("data/Collection", "data/info.csv")
+    # A.learn("data\\collection.csv")
+    # A.predict("data/collection.csv")
+
+    # A.monitoring_preprocess("data/Collection/new_100", "data/info_100.csv")
+
+    # 100개 데이터 전부 학습
+    # 정확도 : 0.8297
+    # 오차   : 0.3303
+
+    # 28개 데이터 전부 학습
+    # 정확도 : 0.9597
+    # 오차   : 0.1087
+
+    # A.learn("data/100/collection.csv")
+    # A.predict("data/collection.csv")
