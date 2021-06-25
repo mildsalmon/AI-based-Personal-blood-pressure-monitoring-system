@@ -5,8 +5,6 @@ import tensorflow as tf
 import matplotlib.pyplot as plt
 
 from sklearn.model_selection import train_test_split
-from tensorflow.keras.models import load_model
-
 
 class deep_collection_basic:
     def __init__(self):
@@ -25,7 +23,7 @@ class deep_collection_basic:
 
         plt.rcParams['font.family'] = 'NanumSquare'
 
-        path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data\collection.csv")
+        path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../data/collection.csv")
 
         print(path)
 
@@ -62,6 +60,8 @@ class deep_collection_basic:
 
         print("HW_gray_code_list", HW_gray_code_list)
 
+        BP_DS = BP.iloc[:,0:2]
+
         BP_D = BP.iloc[:, 0]
         BP_S = BP.iloc[:, 1]
 
@@ -88,27 +88,16 @@ class deep_collection_basic:
         # X = pd.concat([wave, HW], axis=1)
         # print("X:",X)
 
-        X_np = self.list_append(wave_list, HW_gray_code_list)
-        Y_np = self.list_append(BP_D_gray_code_list, BP_S_gray_code_list)
+        X_np = wave_list
+        Y_np = BP_DS
 
         X_data = self.make_np_array(X_np)
         Y_data = self.make_np_array(Y_np)
 
         print("X_data:",X_data)
         print("Y_data:",Y_data)
-        print("X_data_t:",type(X_data))
-        print("Y_data_t:",type(Y_data))
 
-        # X_train, X_test, Y_train, Y_test = train_test_split(X_data, Y_data, test_size=0.3)#, random_state=seed)
-        X_train = X_data[0:588]
-        X_test = X_data[588:]
-        Y_train = Y_data[0:588]
-        Y_test = Y_data[588:]
-
-        print("X_data:",Y_train)
-        print("Y_data:",Y_test)
-        print("X_data_t:",type(Y_train))
-        print("Y_data_t:",type(Y_test))
+        X_train, X_test, Y_train, Y_test = train_test_split(X_data, Y_data, test_size=0.3)#, random_state=seed)
 
         self.modeling(X_train, X_test, Y_train, Y_test)
 
@@ -139,28 +128,25 @@ class deep_collection_basic:
         # history = model.fit(X_train, Y_train, epochs=20, batch_size=100,validation_data=(X_test, Y_test))
 
         epoch = 200
-        batch_size = 1
+        batch_size = 5
 
-        model.add(tf.keras.layers.Dense(64, input_dim=144, activation='relu'))
+        model.add(tf.keras.layers.Dense(64, input_dim=128, activation='relu'))
         model.add(tf.keras.layers.Dropout(0.4))
         model.add(tf.keras.layers.Dense(64, activation='relu'))
         model.add(tf.keras.layers.Dropout(0.4))
         # model.add(tf.keras.layers.Dense(32, activation='sigmoid'))
         # model.add(tf.keras.layers.Dropout(0.4))
-        model.add(tf.keras.layers.Dense(16, activation='sigmoid'))
-        model.compile(loss='binary_crossentropy',
+        model.add(tf.keras.layers.Dense(2, activation='relu'))
+        model.compile(loss='mean_absolute_error',
                       optimizer='adam',
                       metrics=['accuracy'])
-        # history = model.fit(X_train, Y_train, epochs=epoch, batch_size=batch_size, validation_data=(X_test, Y_test))
-
-        model = load_model('model_save.h5')
-
+        history = model.fit(X_train, Y_train, epochs=epoch, batch_size=batch_size, validation_data=(X_test, Y_test))
 
         model.summary()
         print(model.evaluate(X_test, Y_test))
 
-        # print(history.history['val_loss'])
-        # print(history.history['loss'])
+        print(history.history['val_loss'])
+        print(history.history['loss'])
 
         # print(X_train[1:10])
         print(model.predict(X_train[1:2], batch_size=batch_size))
@@ -169,7 +155,7 @@ class deep_collection_basic:
         predict = model.predict(X_test[:], batch_size=batch_size)
         Y_test_use = Y_test[:]
 
-        print("X_test[1] : \n", X_test[1:10])
+        print("X_test[1] : \n", X_test[0:10])
         print("model.predict(X_test[1:2], batch_size=5) : \n", predict)
         # print("type(predict) : \n", type(predict))
         print("Y_test[1] : \n",Y_test_use)
@@ -177,25 +163,25 @@ class deep_collection_basic:
         predict_list = self.np_to_list(predict)
         Y_test_use_list = self.np_to_list(Y_test_use)
 
-        gray_list = self.predict_to_gray(predict_list)
-        Y_test_use_gray_list = self.predict_to_gray(Y_test_use_list)
+        # gray_list = self.predict_to_gray(predict_list)
+        # Y_test_use_gray_list = self.predict_to_gray(Y_test_use_list)
 
         # print("predict_list :", predict_list)
-        print("gray_list :\n", *gray_list, sep='\n')
+        # print("gray_list :\n", *gray_list, sep='\n')
 
-        print("matching per : ", self.matching_per(self.np_to_list(Y_test_use), gray_list))
+        # print("matching per : ", self.matching_per(self.np_to_list(Y_test_use), gray_list))
 
-        BP_D_binary_code, BP_S_binary_code = self.binary_code(gray_list)
+        BP_D_binary_code, BP_S_binary_code = self.binary_code(predict_list)
         # print("BP_D_binary_code :\n", *BP_D_binary_code, sep='\n')
         # print("BP_S_binary_code :\n", *BP_S_binary_code, sep='\n')
 
-        BP_D_Y_test, BP_S_Y_test = self.binary_code(Y_test_use_gray_list)
+        BP_D_Y_test, BP_S_Y_test = self.binary_code(Y_test_use_list)
 
-        BP_D_dec = self.binary_to_dec(BP_D_binary_code)
-        BP_S_dec = self.binary_to_dec(BP_S_binary_code)
+        BP_D_dec = BP_D_binary_code
+        BP_S_dec = BP_S_binary_code
 
-        BP_D_Y_dec = self.binary_to_dec(BP_D_Y_test)
-        BP_S_Y_dec = self.binary_to_dec(BP_S_Y_test)
+        BP_D_Y_dec = BP_D_Y_test
+        BP_S_Y_dec = BP_S_Y_test
 
         print("\n====Y 값====\n")
         print("BP_D_Y_dec", BP_D_Y_dec)
@@ -219,48 +205,48 @@ class deep_collection_basic:
         # print(X_test)
         # print(model.get_weights())
 
-        # y_loss = history.history['loss']
-        # y_vloss = history.history['val_loss']
-        # y_acc = history.history['accuracy']
-        # y_vacc = history.history['val_accuracy']
-        # x_len = np.arange(len(y_acc))
-        #
-        # """
-        # v = 테스트셋에 대한 실험 결과
-        # v 없는 것 = 학습셋에 대한 실험 결과
-        # """
-        # plt.plot(x_len, y_vloss, c='red', label='테스트셋에 대한 결과')
-        # plt.plot(x_len, y_vacc, c='red')
-        # plt.plot(x_len, y_loss, c='blue', label='학습셋에 대한 결과')
-        # plt.plot(x_len, y_acc, c='blue')
-        # plt.legend(loc='center right')
-        # plt.axis([-10, epoch+10, 0, 1])
-        # plt.xlabel("epoch")
-        # plt.ylabel("정확도, 오차율")
-        # plt.title("테스트셋과 학습셋의 정확도와 오차율")
-        # plt.show()
-        #
-        # plt.plot(x_len, y_vloss, c='red', label='테스트셋에 대한 결과')
-        # plt.plot(x_len, y_loss, c='blue', label='학습셋에 대한 결과')
-        # plt.legend(loc='center right')
-        # plt.xlabel("epoch")
-        # plt.ylabel("오차율")
-        # plt.title("테스트셋과 학습셋의 오차율 비교")
-        # plt.show()
-        #
-        # plt.plot(x_len, y_vacc, c='red', label='테스트셋에 대한 결과')
-        # plt.plot(x_len, y_acc, c='blue', label='학습셋에 대한 결과')
-        # plt.legend(loc='center right')
-        # plt.xlabel("epoch")
-        # plt.ylabel("정확도")
-        # plt.title("테스트셋과 학습셋의 정확도 비교")
-        # plt.show()
+        y_loss = history.history['loss']
+        y_vloss = history.history['val_loss']
+        y_acc = history.history['accuracy']
+        y_vacc = history.history['val_accuracy']
+        x_len = np.arange(len(y_acc))
+
+        """
+        v = 테스트셋에 대한 실험 결과
+        v 없는 것 = 학습셋에 대한 실험 결과
+        """
+        plt.plot(x_len, y_vloss, c='red', label='테스트셋에 대한 결과')
+        plt.plot(x_len, y_vacc, c='red')
+        plt.plot(x_len, y_loss, c='blue', label='학습셋에 대한 결과')
+        plt.plot(x_len, y_acc, c='blue')
+        plt.legend(loc='center right')
+        plt.axis([-10, epoch+10, 0, 1])
+        plt.xlabel("epoch")
+        plt.ylabel("정확도, 오차율")
+        plt.title("테스트셋과 학습셋의 정확도와 오차율")
+        plt.show()
+
+        plt.plot(x_len, y_vloss, c='red', label='테스트셋에 대한 결과')
+        plt.plot(x_len, y_loss, c='blue', label='학습셋에 대한 결과')
+        plt.legend(loc='center right')
+        plt.xlabel("epoch")
+        plt.ylabel("오차율")
+        plt.title("테스트셋과 학습셋의 오차율 비교")
+        plt.show()
+
+        plt.plot(x_len, y_vacc, c='red', label='테스트셋에 대한 결과')
+        plt.plot(x_len, y_acc, c='blue', label='학습셋에 대한 결과')
+        plt.legend(loc='center right')
+        plt.xlabel("epoch")
+        plt.ylabel("정확도")
+        plt.title("테스트셋과 학습셋의 정확도 비교")
+        plt.show()
 
         X_test_Series = pd.DataFrame(X_test)
         Y_test_Series = pd.DataFrame(Y_test)
         Y_dec_Series = pd.DataFrame([BP_D_Y_dec, BP_S_Y_dec], index=['real_BP_D', 'real_BP_S'])
         predict_dec_Serires = pd.DataFrame([BP_D_dec, BP_S_dec], index=['predict_BP_D', 'predict_BP_S'])
-        per = pd.DataFrame([self.matching_per(self.np_to_list(Y_test_use), gray_list)], index=['gray code per'])
+        per = pd.DataFrame([self.matching_per(self.np_to_list(Y_test_use), predict_list)], index=['gray code per'])
 
         Y_dec_Series = Y_dec_Series.transpose()
         predict_dec_Serires = predict_dec_Serires.transpose()
@@ -282,7 +268,9 @@ class deep_collection_basic:
         self.save_list_as_csv(save_csv)
 
     def save_list_as_csv(self, save):
-        save.to_csv("data/prediction.csv", mode='w', header=True)
+        path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../data/prediction_A.csv")
+
+        save.to_csv(path, mode='w', header=True)
 
     def matching_per(self, real_data, predict_data):
         if len(real_data[0]) != len(predict_data[0]):
@@ -399,7 +387,7 @@ class deep_collection_basic:
             BP_D = []
             BP_S = []
             for j, code in enumerate(gray_code):
-                if j < 8:
+                if j < 1:
                     BP_D.append(code)
                 else:
                     BP_S.append(code)

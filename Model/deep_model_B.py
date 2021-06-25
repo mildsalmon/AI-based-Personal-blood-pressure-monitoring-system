@@ -139,8 +139,8 @@ class deep_collection_basic:
         model.add(tf.keras.layers.Dropout(0.4))
         # model.add(tf.keras.layers.Dense(32, activation='sigmoid'))
         # model.add(tf.keras.layers.Dropout(0.4))
-        model.add(tf.keras.layers.Dense(2, activation='relu'))
-        model.compile(loss='mean_absolute_error',
+        model.add(tf.keras.layers.Dense(2, activation='sigmoid'))
+        model.compile(loss='binary_crossentropy',
                       optimizer='adam',
                       metrics=['accuracy'])
         history = model.fit(X_train, Y_train, epochs=epoch, batch_size=batch_size, validation_data=(X_test, Y_test))
