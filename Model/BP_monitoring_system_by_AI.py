@@ -1033,7 +1033,7 @@ class BpMonitoringSystemByAi:
         Y_test_use_list = self.convert_NP_to_LIST(Y_test_use)
 
         gray_list = self.convert_Pridiction_to_GrayCode(predict_list)
-        Y_test_use_gray_list = self.convert_Pridiction_to_GrayCode(Y_test_use_list)
+        # Y_test_use_gray_list = self.convert_Pridiction_to_GrayCode(Y_test_use_list)
 
         per = self.match(Y_test_use_list, gray_list)
         # print("predict_list :", predict_list)
@@ -1042,7 +1042,8 @@ class BpMonitoringSystemByAi:
         print("matching per : ", per)
 
         BP_D_dec, BP_S_dec = self.convert_GrayCode_to_DEC(gray_list)
-        BP_D_Y_dec, BP_S_Y_dec = self.convert_GrayCode_to_DEC(Y_test_use_gray_list)
+        # BP_D_Y_dec, BP_S_Y_dec = self.convert_GrayCode_to_DEC(Y_test_use_gray_list)
+        BP_D_Y_dec, BP_S_Y_dec = self.convert_GrayCode_to_DEC(Y_test_use_list)
 
         return BP_D_dec, BP_S_dec, BP_D_Y_dec, BP_S_Y_dec, per
 
