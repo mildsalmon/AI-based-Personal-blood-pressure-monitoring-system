@@ -10,7 +10,7 @@ import copy
 from sklearn.model_selection import train_test_split
 from tensorflow.keras.models import load_model
 
-class BpMonitoringSystemByAi:
+class DistinguishingPeopleByPpgSignals:
     def __init__(self):
         # seed 값 설정
         seed = 0
@@ -29,13 +29,6 @@ class BpMonitoringSystemByAi:
 
         self.epoch = 2000
         self.batch_size = 5
-
-    def rp_preprocess(self):
-        """
-        라즈베리파이에서 수집한 데이터 전처리
-        :return:
-        """
-        pass
 
     def monitoring_preprocess(self, dir_name, info_dir):
         """
@@ -95,7 +88,7 @@ class BpMonitoringSystemByAi:
 
             # print(type(num_1_pd[['SpO2 Wave', ' SpO2', ' BP_S', ' BP_D', ' TIME']]))
             num_1_use = num_1_pd[[' SpO2', 'SpO2 Wave', ' BP_S', ' BP_D', ' TIME']]
-            info_use = info_pd[['height', 'weight']]
+            info_use = info_pd[['num']]
 
             # print(num_1_use)
 
@@ -411,14 +404,12 @@ class BpMonitoringSystemByAi:
 
                 # print(info_use)
 
-                height = info_use.iloc[i, 0]
-                weight = info_use.iloc[i, 1]
+                unique_number = info_use.iloc[i, 0]
 
                 # print("height :", height)
                 # print("weight :", weight)
 
-                h_w_Series = pd.Series({'height': height,
-                                        'weight': weight})
+                unique_number_Series = pd.Series({'unique_number': unique_number})
 
                 select_wave_one_one = 0
 
@@ -478,7 +469,7 @@ class BpMonitoringSystemByAi:
 
                 select_wave_one.index = bio_index
 
-                select_wave_one = pd.concat([h_w_Series, Max_BP_Series, select_wave_one])
+                select_wave_one = pd.concat([unique_number_Series, select_wave_one])
 
                 # print(type(select_wave_one))
                 # print("select_wave_oee:", select_wave_one)
@@ -503,7 +494,7 @@ class BpMonitoringSystemByAi:
         print("start :", spo2_wave_start)
         print("end :", end)
 
-        select_wave_pd.to_csv("data/collection.csv", mode='w', header=True)
+        select_wave_pd.to_csv("collection.csv", mode='w', header=True)
 
     def learn(self, dir_name):
         """
@@ -520,71 +511,38 @@ class BpMonitoringSystemByAi:
         csv_data = self.load_collection_data(path=path)
         # print(csv_data)
 
-        wave = csv_data.iloc[:,0:128]
-        BP = csv_data.iloc[:,-4:-2]
-        HW = csv_data.iloc[:,-2:]
+        ppg = csv_data.iloc[:,0:128]
+        unique_num = csv_data.iloc[:,-1]
 
-        # print(wave,"\n",BP, "\n", HW)
+        print("ppg : ", ppg)
+        print("unique_num : ", unique_num)
 
         """
         PPG 정보를 list로 변환
         """
-        wave_list = wave.values.tolist()
-
-        # print("wave_list", wave_list)
-        # # print("wave_list", *wave_list, sep='\n')
-        # print("wave_list[0]_len", len(wave_list[0]))
-        # print("wave_list_len", len(wave_list))
-        # print("wave_list_type", type(wave_list))
+        ppg_list = ppg.values.tolist()
 
         """
         키, 몸무게를 각 변수로 분리
         """
-        Height = HW.iloc[:, 0]
-        Weight = HW.iloc[:, 1]
+        unique_num = unique_num.values
 
-        Height = Height.values
-        Weight = Weight.values
+        # 개인별 고유 번호를 2진수로 변환
 
-        # 키, 몸무게(십진수 데이터)를 gray code로 변환
-        Height_gray_code_list = self.convert_DEC_to_GrayCode(Height)
-        Weight_gray_code_list = self.convert_DEC_to_GrayCode(Weight)
+        unique_num_binary_code_list = self.convert_DEC_to_BinaryCode(unique_num)
 
-        # print("Height_gray_code_list", Height_gray_code_list)
-        # print("Weight_gray_code_list", Weight_gray_code_list)
-
-        # 분리한 키, 몸무게의 gray code를 합침
-        HW_gray_code_list = self.list_append(Height_gray_code_list, Weight_gray_code_list)
-
-        # print("HW_gray_code_list", HW_gray_code_list)
+        print("Unique_num_binary_code_list : ", unique_num_binary_code_list)
 
         """
-        혈압 정보를 수축기 혈압과 이완기 혈압으로 구분
+        
         """
-        BP_D = BP.iloc[:, 0]
-        BP_S = BP.iloc[:, 1]
-
-        BP_D = BP_D.values
-        BP_S = BP_S.values
-
-        # print(type(BP_D))
-
-        BP_D_gray_code_list = self.convert_DEC_to_GrayCode(BP_D)
-        BP_S_gray_code_list = self.convert_DEC_to_GrayCode(BP_S)
-
-        # print("BP_D_gray_code_list", BP_D_gray_code_list)
-        # print("BP_S_gray_code_list", BP_S_gray_code_list)
-
-        X_np = self.list_append(wave_list, HW_gray_code_list)
-        Y_np = self.list_append(BP_D_gray_code_list, BP_S_gray_code_list)
-
-        X_data = self.make_np_array(X_np)
-        Y_data = self.make_np_array(Y_np)
+        X_data = self.make_np_array(ppg_list)
+        Y_data = self.make_np_array(unique_num_binary_code_list)
 
         # print("X_data:",X_data)
         # print("Y_data:",Y_data)
 
-        X_train, X_test, Y_train, Y_test = train_test_split(X_data, Y_data, test_size=0.3)#, random_state=seed)
+        X_train, X_test, Y_train, Y_test = train_test_split(X_data, Y_data, test_size=0.2)#, random_state=seed)
 
         model, history = self.model(X_train, X_test, Y_train, Y_test)
 
@@ -596,34 +554,30 @@ class BpMonitoringSystemByAi:
 
         # print(X_train[1:10])
         print(model.predict(X_train[1:2], batch_size=self.batch_size))
-        print(Y_train[1])
+        # print(Y_train[1])
 
         predict = model.predict(X_test[:], batch_size=self.batch_size)
         Y_test_use = Y_test[:]
 
         print("X_test[1] : \n", X_test[0:10])
         print("model.predict(X_test[1:2], batch_size=5) : \n", predict)
-        # print("type(predict) : \n", type(predict))
+        print("type(predict) : \n", type(predict))
         print("Y_test[1] : \n",Y_test_use)
 
-        BP_D_dec, BP_S_dec, BP_D_Y_dec, BP_S_Y_dec, per = self.postprocess(predict, Y_test_use)
+        unique_num_dec, unique_num_Y_dec, per = self.postprocess(predict, Y_test_use)
 
         print("\n====Y 값====\n")
-        print("BP_D_Y_dec", BP_D_Y_dec)
-        print("BP_S_Y_dec", BP_S_Y_dec)
+        print("BP_D_Y_dec", unique_num_Y_dec)
 
         print("\n====predict 값====\n")
-        print("BP_D_dec", BP_D_dec)
-        print("BP_S_dec", BP_S_dec)
+        print("BP_D_dec", unique_num_dec)
 
-        for i in range(len(BP_D_dec)):
+        for i in range(len(unique_num_dec)):
             print("\n====Y 값====\n")
-            print("BP_D_Y_dec", BP_D_Y_dec[i])
-            print("BP_S_Y_dec", BP_S_Y_dec[i])
+            print("BP_D_Y_dec", unique_num_Y_dec[i])
 
             print("\n====predict 값====\n")
-            print("BP_D_dec", BP_D_dec[i])
-            print("BP_S_dec", BP_S_dec[i])
+            print("BP_D_dec", unique_num_dec[i])
 
         print("정확도 : ", model.evaluate(X_test, Y_test)[1])
         print("오차 : ", model.evaluate(X_test, Y_test)[0])
@@ -669,8 +623,8 @@ class BpMonitoringSystemByAi:
 
         X_test_Series = pd.DataFrame(X_test)
         Y_test_Series = pd.DataFrame(Y_test)
-        Y_dec_Series = pd.DataFrame([BP_D_Y_dec, BP_S_Y_dec], index=['real_BP_D', 'real_BP_S'])
-        predict_dec_Serires = pd.DataFrame([BP_D_dec, BP_S_dec], index=['predict_BP_D', 'predict_BP_S'])
+        Y_dec_Series = pd.DataFrame([unique_num_Y_dec], index=['real_unique_num'])
+        predict_dec_Serires = pd.DataFrame([unique_num_dec], index=['predict_unique_num'])
         per = pd.DataFrame([per], index=['gray code per'])
 
         Y_dec_Series = Y_dec_Series.transpose()
@@ -803,11 +757,11 @@ class BpMonitoringSystemByAi:
         #               metrics=['accuracy'])
         # history = model.fit(X_train, Y_train, epochs=20, batch_size=100,validation_data=(X_test, Y_test))
 
-        model.add(tf.keras.layers.Dense(64, input_dim=144, activation='sigmoid'))
+        model.add(tf.keras.layers.Dense(64, input_dim=128, activation='sigmoid'))
         model.add(tf.keras.layers.Dropout(0.4))
         model.add(tf.keras.layers.Dense(64, activation='sigmoid'))
         model.add(tf.keras.layers.Dropout(0.4))
-        model.add(tf.keras.layers.Dense(16, activation='sigmoid'))
+        model.add(tf.keras.layers.Dense(8, activation='sigmoid'))
 
         model.compile(loss='binary_crossentropy',
                       optimizer='adam',
@@ -1032,8 +986,8 @@ class BpMonitoringSystemByAi:
         predict_list = self.convert_NP_to_LIST(predict)
         Y_test_use_list = self.convert_NP_to_LIST(Y_test_use)
 
-        gray_list = self.convert_Pridiction_to_GrayCode(predict_list)
-        # Y_test_use_gray_list = self.convert_Pridiction_to_GrayCode(Y_test_use_list)
+        gray_list = self.convert_Prediction_to_GrayCode(predict_list)
+        # Y_test_use_gray_list = self.convert_Prediction_to_GrayCode(Y_test_use_list)
 
         per = self.match(Y_test_use_list, gray_list)
         # print("predict_list :", predict_list)
@@ -1041,11 +995,10 @@ class BpMonitoringSystemByAi:
 
         print("matching per : ", per)
 
-        BP_D_dec, BP_S_dec = self.convert_GrayCode_to_DEC(gray_list)
-        # BP_D_Y_dec, BP_S_Y_dec = self.convert_GrayCode_to_DEC(Y_test_use_gray_list)
-        BP_D_Y_dec, BP_S_Y_dec = self.convert_GrayCode_to_DEC(Y_test_use_list)
+        unique_num_dec = self.convert_BinaryCode_to_DEC(gray_list)
+        unique_num_Y_dec = self.convert_BinaryCode_to_DEC(Y_test_use_list)
 
-        return BP_D_dec, BP_S_dec, BP_D_Y_dec, BP_S_Y_dec, per
+        return unique_num_dec, unique_num_Y_dec, per
 
     def search_csv_file(self, file_list):
         """
@@ -1089,7 +1042,7 @@ class BpMonitoringSystemByAi:
             인공지능 모델
         :return:
         """
-        model.save('data\\model_save.h5')
+        model.save('model_save.h5')
 
     def load_model(self):
         """
@@ -1111,7 +1064,7 @@ class BpMonitoringSystemByAi:
             파일 경로는 ./data로 고정
         :return:
         """
-        path = self.set_path("data\\"+file_name)
+        path = self.set_path(file_name)
 
         save.to_csv(path, mode='w', header=True)
 
@@ -1194,7 +1147,7 @@ class BpMonitoringSystemByAi:
 
         return list
 
-    def convert_Pridiction_to_GrayCode(self, prediction_list):
+    def convert_Prediction_to_GrayCode(self, prediction_list):
         """
         인공지능 모델을 통해 얻어진 prediction값은 0과 1로 이루어진 binary 형식의 값이 아니다.
         이 모델은 키와 몸무게를 gray code로 변환시켜서 학습했기 때문에 예측값도 binary 형식으로 바꿔주는 작업이 필요하다.
@@ -1359,7 +1312,7 @@ class BpMonitoringSystemByAi:
     #     num1
 
 if __name__ == "__main__":
-    A = BpMonitoringSystemByAi()
+    A = DistinguishingPeopleByPpgSignals()
 
     # A.rp_preprocess()
     # A.monitoring_preprocess("data/Collection", "data/info.csv")
@@ -1367,8 +1320,8 @@ if __name__ == "__main__":
     # A.predict("data\\unknown.csv")
 
     # A.monitoring_preprocess("data/Collection/new_100", "data/info_100.csv")
-    A.learn("data\\collection.csv")
-    A.predict("data\\unknown.csv")
+    # A.learn("data\\collection.csv")
+    # A.predict("data\\unknown.csv")
 
     # A.predict("data/collection_new.csv")
 
@@ -1388,3 +1341,6 @@ if __name__ == "__main__":
 
     # A.learn("data/100/collection.csv")
     # A.predict("data/collection.csv")
+
+    # A.monitoring_preprocess("data", "info.csv")
+    A.learn("data_set_ppg&unique_num.csv")
