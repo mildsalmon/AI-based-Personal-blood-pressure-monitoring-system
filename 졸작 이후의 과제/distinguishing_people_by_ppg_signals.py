@@ -563,8 +563,17 @@ class DistinguishingPeopleByPpgSignals:
         print("model.predict(X_test[1:2], batch_size=5) : \n", predict)
         print("type(predict) : \n", type(predict))
         print("Y_test[1] : \n",Y_test_use)
+        print("type(Y_test) : \n", type(Y_test_use))
 
-        unique_num_dec, unique_num_Y_dec, per = self.postprocess(predict, Y_test_use)
+        unique_num_dec, unique_num_Y_dec = self.postprocess(predict, Y_test_use)
+
+        print("type(unique_num_dec) : ", type(unique_num_dec[0]))
+        print(type(unique_num_Y_dec[0]))
+
+        """
+        FAR 구하기 : 각 Label별로 정확도를 계산하는 것
+        """
+        FAR = self.FAR(unique_num_Y_dec, unique_num_dec)
 
         print("\n====Y 값====\n")
         print("BP_D_Y_dec", unique_num_Y_dec)
@@ -625,17 +634,21 @@ class DistinguishingPeopleByPpgSignals:
         Y_test_Series = pd.DataFrame(Y_test)
         Y_dec_Series = pd.DataFrame([unique_num_Y_dec], index=['real_unique_num'])
         predict_dec_Serires = pd.DataFrame([unique_num_dec], index=['predict_unique_num'])
-        per = pd.DataFrame([per], index=['gray code per'])
+        # per = pd.DataFrame([per], index=['gray code per'])
 
         Y_dec_Series = Y_dec_Series.transpose()
         predict_dec_Serires = predict_dec_Serires.transpose()
-        per = per.transpose()
+        # per = per.transpose()
 
-        save_csv = pd.concat([X_test_Series, Y_dec_Series, predict_dec_Serires, per], axis=1)
+        save_csv = pd.concat([X_test_Series, Y_dec_Series, predict_dec_Serires], axis=1)
 
         print("save_csv : ", save_csv)
 
         self.save_prediction_data(save_csv, "prediction_learn.csv")
+
+        FAR_Series = pd.Series(FAR)
+
+        self.save_prediction_data(FAR_Series, "FAR.csv")
 
     def model(self, X_train, X_test, Y_train, Y_test):
         """
@@ -717,16 +730,16 @@ class DistinguishingPeopleByPpgSignals:
         gray_list = self.convert_Prediction_to_BinaryCode(predict_list)
         # Y_test_use_gray_list = self.convert_Prediction_to_GrayCode(Y_test_use_list)
 
-        per = self.match(Y_test_use_list, gray_list)
+        # per = self.match(Y_test_use_list, gray_list)
         # print("predict_list :", predict_list)
         # print("gray_list :\n", *gray_list, sep='\n')
 
-        print("matching per : ", per)
+        # print("matching per : ", per)
 
         unique_num_dec = self.convert_BinaryCode_to_DEC(gray_list)
         unique_num_Y_dec = self.convert_BinaryCode_to_DEC(Y_test_use_list)
 
-        return unique_num_dec, unique_num_Y_dec, per
+        return unique_num_dec, unique_num_Y_dec
 
     def search_csv_file(self, file_list):
         """
@@ -943,6 +956,37 @@ class DistinguishingPeopleByPpgSignals:
                     binary_BP_list[i].insert(0, 0)
 
         return binary_BP_list
+
+    def FAR(self, unique_num_Y_dec, unique_num_dec):
+        """
+        FAR 계산
+        FAR : 잘못된 허용의 비율 -> 정답이 아닌데 정답이라고 인정한 비율
+        """
+
+        unique_num_count = [0] * 14
+
+        for unique_num in unique_num_Y_dec:
+            unique_num_count[unique_num] += 1
+
+        true_unique_num_count = [0] * 14
+
+        for i, unique_num in enumerate(unique_num_dec):
+            if unique_num_dec[i] == unique_num_Y_dec[i]:
+                true_unique_num_count[unique_num] += 1
+
+        FAR = [0] * 14
+
+        for i, _ in enumerate(unique_num_count):
+            try:
+                FAR[i] = true_unique_num_count[i] / unique_num_count[i]
+            except ZeroDivisionError:
+                FAR[i] = 0
+
+        # print(unique_num_count)
+        # print(true_unique_num_count)
+        # print("FAR : ", FAR)
+
+        return FAR
 
     # def XOR(self, num1, num2):
     #     num1
