@@ -563,8 +563,17 @@ class DistinguishingPeopleByPpgSignals:
         print("model.predict(X_test[1:2], batch_size=5) : \n", predict)
         print("type(predict) : \n", type(predict))
         print("Y_test[1] : \n",Y_test_use)
+        print("type(Y_test) : \n", type(Y_test_use))
 
-        unique_num_dec, unique_num_Y_dec, per = self.postprocess(predict, Y_test_use)
+        unique_num_dec, unique_num_Y_dec = self.postprocess(predict, Y_test_use)
+
+        print("type(unique_num_dec) : ", type(unique_num_dec[0]))
+        print(type(unique_num_Y_dec[0]))
+
+        """
+        FAR 구하기 : 각 Label별로 정확도를 계산하는 것
+        """
+        FAR = self.FAR(unique_num_Y_dec, unique_num_dec)
 
         print("\n====Y 값====\n")
         print("BP_D_Y_dec", unique_num_Y_dec)
@@ -625,103 +634,21 @@ class DistinguishingPeopleByPpgSignals:
         Y_test_Series = pd.DataFrame(Y_test)
         Y_dec_Series = pd.DataFrame([unique_num_Y_dec], index=['real_unique_num'])
         predict_dec_Serires = pd.DataFrame([unique_num_dec], index=['predict_unique_num'])
-        per = pd.DataFrame([per], index=['gray code per'])
+        # per = pd.DataFrame([per], index=['gray code per'])
 
         Y_dec_Series = Y_dec_Series.transpose()
         predict_dec_Serires = predict_dec_Serires.transpose()
-        per = per.transpose()
+        # per = per.transpose()
 
-        save_csv = pd.concat([X_test_Series, Y_dec_Series, predict_dec_Serires, per], axis=1)
+        save_csv = pd.concat([X_test_Series, Y_dec_Series, predict_dec_Serires], axis=1)
 
         print("save_csv : ", save_csv)
 
         self.save_prediction_data(save_csv, "prediction_learn.csv")
 
-    def learn2(self, dir_name):
-        """
-        인공지능 모델 학습을 위한 함수
-        :param dir_name:
-            예측할 데이터가 있는 디렉터리명
-            ex) data\\collection.csv
-        :return:
-        """
-        path = self.set_path(dir_name)
+        FAR_Series = pd.Series(FAR)
 
-        # print(path)
-
-        csv_data = self.load_collection_data(path=path)
-        # print(csv_data)
-
-        wave = csv_data.iloc[:,0:128]
-        BP = csv_data.iloc[:,-4:-2]
-        HW = csv_data.iloc[:,-2:]
-
-        # print(wave,"\n",BP, "\n", HW)
-
-        """
-        PPG 정보를 list로 변환
-        """
-        wave_list = wave.values.tolist()
-
-        # print("wave_list", wave_list)
-        # # print("wave_list", *wave_list, sep='\n')
-        # print("wave_list[0]_len", len(wave_list[0]))
-        # print("wave_list_len", len(wave_list))
-        # print("wave_list_type", type(wave_list))
-
-        """
-        키, 몸무게를 각 변수로 분리
-        """
-        Height = HW.iloc[:, 0]
-        Weight = HW.iloc[:, 1]
-
-        Height = Height.values
-        Weight = Weight.values
-
-        # 키, 몸무게(십진수 데이터)를 gray code로 변환
-        Height_gray_code_list = self.convert_DEC_to_GrayCode(Height)
-        Weight_gray_code_list = self.convert_DEC_to_GrayCode(Weight)
-
-        # print("Height_gray_code_list", Height_gray_code_list)
-        # print("Weight_gray_code_list", Weight_gray_code_list)
-
-        # 분리한 키, 몸무게의 gray code를 합침
-        HW_gray_code_list = self.list_append(Height_gray_code_list, Weight_gray_code_list)
-
-        # print("HW_gray_code_list", HW_gray_code_list)
-
-        """
-        혈압 정보를 수축기 혈압과 이완기 혈압으로 구분
-        """
-        BP_D = BP.iloc[:, 0]
-        BP_S = BP.iloc[:, 1]
-
-        BP_D = BP_D.values
-        BP_S = BP_S.values
-
-        # print(type(BP_D))
-
-        BP_D_gray_code_list = self.convert_DEC_to_GrayCode(BP_D)
-        BP_S_gray_code_list = self.convert_DEC_to_GrayCode(BP_S)
-
-        # print("BP_D_gray_code_list", BP_D_gray_code_list)
-        # print("BP_S_gray_code_list", BP_S_gray_code_list)
-
-        X_np = self.list_append(wave_list, HW_gray_code_list)
-        Y_np = self.list_append(BP_D_gray_code_list, BP_S_gray_code_list)
-
-        X_data = self.make_np_array(X_np)
-        Y_data = self.make_np_array(Y_np)
-
-        # print("X_data:",X_data)
-        # print("Y_data:",Y_data)
-
-        model, history = self.model2(X_data, Y_data)
-
-        model.summary()
-
-        print("정확도 : ", model.evaluate(X_data, Y_data)[1])
-        print("오차 : ", model.evaluate(X_data, Y_data)[0])
+        self.save_prediction_data(FAR_Series, "FAR.csv")
 
     def model(self, X_train, X_test, Y_train, Y_test):
         """
@@ -786,192 +713,6 @@ class DistinguishingPeopleByPpgSignals:
 
         return model, history
 
-    def model2(self, X_train, Y_train):
-        """
-        학습에 사용하는 인공지능 모델
-        :param X_train:
-        :param X_test:
-        :param Y_train:
-        :param Y_test:
-        :return:
-        """
-        model = tf.keras.models.Sequential()
-
-        # X_train_len = len(X_train)
-        # model.add(tf.keras.layers.Embedding(X_train_len, 144))
-        # model.add(tf.keras.layers.Dropout(0.5))
-        # model.add(tf.keras.layers.Conv1D(64, 5, padding='valid', activation='relu', strides=1))
-        # model.add(tf.keras.layers.MaxPooling1D(pool_size=4))
-        # model.add(tf.keras.layers.LSTM(32, activation='relu'))
-        # model.add(tf.keras.layers.Dense(16))
-        # model.add(tf.keras.layers.Activation('sigmoid'))
-        # model.compile(loss='binary_crossentropy',
-        #               optimizer='adam',
-        #               metrics=['accuracy'])
-        # history = model.fit(X_train, Y_train, epochs=200, batch_size=100, validation_data=(X_test, Y_test))
-
-        # X_train_len = len(X_train)
-        # # print(X_train_len)
-        # model.add(tf.keras.layers.Embedding(X_train_len, 144))
-        # model.add(tf.keras.layers.LSTM(64, activation='relu'))
-        # model.add(tf.keras.layers.Dense(16, activation='softmax'))
-        # model.compile(loss='binary_crossentropy',
-        #               optimizer='adam',
-        #               metrics=['accuracy'])
-        # history = model.fit(X_train, Y_train, epochs=20, batch_size=100,validation_data=(X_test, Y_test))
-
-        model.add(tf.keras.layers.Dense(64, input_dim=144, activation='relu'))
-        model.add(tf.keras.layers.Dropout(0.4))
-        model.add(tf.keras.layers.Dense(64, activation='relu'))
-        model.add(tf.keras.layers.Dropout(0.4))
-        model.add(tf.keras.layers.Dense(16, activation='sigmoid'))
-
-        model.compile(loss='binary_crossentropy',
-                      optimizer='adam',
-                      metrics=['accuracy'])
-        history = model.fit(X_train, Y_train, epochs=self.epoch, batch_size=self.batch_size)
-
-        self.save_model(model)
-
-        # from keras.utils.vis_utils import plot_model
-        # # os.environ["PATH"] += os.pathsep + 'C:\python\anaconda3_64\envs\Ai_2.0_20.12.31\Lib\site-packages\graphviz\bin'
-        # plot_model(model, to_file='model_plot.png', show_shapes=True, show_layer_names=True)
-        #
-        # from keras.utils import plot_model
-        # plot_model(model, to_file='model.png')
-        #
-        # from keras import backend as K
-        # trainable_count = int(np.sum([K.count_params(p) for p in set(model.trainable_weights)]))
-        # non_trainable_count = int(np.sum([K.count_params(p) for p in set(model.non_trainable_weights)]))
-        # print('Total params: {:,}'.format(trainable_count + non_trainable_count))
-        # print('Trainable params: {:,}'.format(trainable_count))
-        # print('Non-trainable params: {:,}'.format(non_trainable_count))
-
-        return model, history
-
-    def predict(self, dir_name):
-        """
-        인공지능 모델 예측을 위한 함수
-        기존에 학습한 모델 정보를 통해 새로운 데이터(PPG)의 혈압 정보(수축기 혈압, 이완기 혈압)를 예측함
-        :param dir_name:
-            예측할 데이터가 있는 디렉터리명
-            ex) data\\unknown.csv
-        :return:
-        """
-        path = self.set_path(dir_name)
-
-        # print(path)
-
-        csv_data = self.load_collection_data(path=path)
-        # print(csv_data)
-
-        wave = csv_data.iloc[:,0:128]
-        BP = csv_data.iloc[:,-4:-2]
-        HW = csv_data.iloc[:,-2:]
-
-        # print(wave,"\n",BP, "\n", HW)
-
-        wave_list = wave.values.tolist()
-
-        # print("wave_list", wave_list)
-        # # print("wave_list", *wave_list, sep='\n')
-        # print("wave_list[0]_len", len(wave_list[0]))
-        # print("wave_list_len", len(wave_list))
-        # print("wave_list_type", type(wave_list))
-
-        Height = HW.iloc[:, 0]
-        Weight = HW.iloc[:, 1]
-
-        Height = Height.values
-        Weight = Weight.values
-
-        Height_gray_code_list = self.convert_DEC_to_GrayCode(Height)
-        Weight_gray_code_list = self.convert_DEC_to_GrayCode(Weight)
-
-        # print("Height_gray_code_list", Height_gray_code_list)
-        # print("Weight_gray_code_list", Weight_gray_code_list)
-
-        HW_gray_code_list = self.list_append(Height_gray_code_list, Weight_gray_code_list)
-
-        # print("HW_gray_code_list", HW_gray_code_list)
-
-        BP_D = BP.iloc[:, 0]
-        BP_S = BP.iloc[:, 1]
-
-        BP_D = BP_D.values
-        BP_S = BP_S.values
-
-        # print(type(BP_D))
-
-        BP_D_gray_code_list = self.convert_DEC_to_GrayCode(BP_D)
-        BP_S_gray_code_list = self.convert_DEC_to_GrayCode(BP_S)
-
-        # print("BP_D_gray_code_list", BP_D_gray_code_list)
-        # print("BP_S_gray_code_list", BP_S_gray_code_list)
-
-        X_np = self.list_append(wave_list, HW_gray_code_list)
-        Y_np = self.list_append(BP_D_gray_code_list, BP_S_gray_code_list)
-
-        X_data = self.make_np_array(X_np)
-        Y_data = self.make_np_array(Y_np)
-
-        # print("X_data:",X_data)
-        # print("Y_data:",Y_data)
-
-        model = self.load_model()
-
-        model.summary()
-        print(model.evaluate(X_data, Y_data))
-
-        # print(X_train[1:10])
-        print(model.predict(X_data[1:2], batch_size=self.batch_size))
-        print(Y_data[1])
-
-        predict = model.predict(X_data[:], batch_size=self.batch_size)
-        Y_test_use = Y_data[:]
-
-        print("X_test[1] : \n", X_data[0:10])
-        print("model.predict(X_test[1:2], batch_size=5) : \n", predict)
-        # print("type(predict) : \n", type(predict))
-        print("Y_test[1] : \n",Y_test_use)
-
-        BP_D_dec, BP_S_dec, BP_D_Y_dec, BP_S_Y_dec, per = self.postprocess(predict, Y_test_use)
-
-        print("\n====Y 값====\n")
-        print("BP_D_Y_dec", BP_D_Y_dec)
-        print("BP_S_Y_dec", BP_S_Y_dec)
-
-        print("\n====predict 값====\n")
-        print("BP_D_dec", BP_D_dec)
-        print("BP_S_dec", BP_S_dec)
-
-        for i in range(len(BP_D_dec)):
-            print("\n====Y 값====\n")
-            print("BP_D_Y_dec", BP_D_Y_dec[i])
-            print("BP_S_Y_dec", BP_S_Y_dec[i])
-
-            print("\n====predict 값====\n")
-            print("BP_D_dec", BP_D_dec[i])
-            print("BP_S_dec", BP_S_dec[i])
-
-        print("정확도 : ", model.evaluate(X_data, Y_data)[1])
-        print("오차 : ", model.evaluate(X_data, Y_data)[0])
-
-        X_test_Series = pd.DataFrame(X_data)
-        Y_test_Series = pd.DataFrame(Y_data)
-        Y_dec_Series = pd.DataFrame([BP_D_Y_dec, BP_S_Y_dec], index=['real_BP_D', 'real_BP_S'])
-        predict_dec_Serires = pd.DataFrame([BP_D_dec, BP_S_dec], index=['predict_BP_D', 'predict_BP_S'])
-        per = pd.DataFrame([per], index=['gray code per'])
-
-        Y_dec_Series = Y_dec_Series.transpose()
-        predict_dec_Serires = predict_dec_Serires.transpose()
-        per = per.transpose()
-
-        save_csv = pd.concat([X_test_Series, Y_dec_Series, predict_dec_Serires, per], axis=1)
-
-        print("save_csv : ", save_csv)
-
-        self.save_prediction_data(save_csv, "prediction_predict.csv")
 
     def postprocess(self, predict, Y_test_use):
         """
@@ -986,19 +727,19 @@ class DistinguishingPeopleByPpgSignals:
         predict_list = self.convert_NP_to_LIST(predict)
         Y_test_use_list = self.convert_NP_to_LIST(Y_test_use)
 
-        gray_list = self.convert_Prediction_to_GrayCode(predict_list)
+        gray_list = self.convert_Prediction_to_BinaryCode(predict_list)
         # Y_test_use_gray_list = self.convert_Prediction_to_GrayCode(Y_test_use_list)
 
-        per = self.match(Y_test_use_list, gray_list)
+        # per = self.match(Y_test_use_list, gray_list)
         # print("predict_list :", predict_list)
         # print("gray_list :\n", *gray_list, sep='\n')
 
-        print("matching per : ", per)
+        # print("matching per : ", per)
 
         unique_num_dec = self.convert_BinaryCode_to_DEC(gray_list)
         unique_num_Y_dec = self.convert_BinaryCode_to_DEC(Y_test_use_list)
 
-        return unique_num_dec, unique_num_Y_dec, per
+        return unique_num_dec, unique_num_Y_dec
 
     def search_csv_file(self, file_list):
         """
@@ -1147,7 +888,7 @@ class DistinguishingPeopleByPpgSignals:
 
         return list
 
-    def convert_Prediction_to_GrayCode(self, prediction_list):
+    def convert_Prediction_to_BinaryCode(self, prediction_list):
         """
         인공지능 모델을 통해 얻어진 prediction값은 0과 1로 이루어진 binary 형식의 값이 아니다.
         이 모델은 키와 몸무게를 gray code로 변환시켜서 학습했기 때문에 예측값도 binary 형식으로 바꿔주는 작업이 필요하다.
@@ -1176,57 +917,6 @@ class DistinguishingPeopleByPpgSignals:
 
         return binary_list
 
-    """
-    Gray code를 십진수로 Decoding하는 부분
-    """
-    def convert_GrayCode_to_DEC(self, gray_code_list):
-        """
-        gray code를 십진수로 변환
-        gray code는 십진수로 변환할 때 (gray code -> binary code -> 십진수)의 과정을 거친다.
-        :param gray_code_list:
-            gray code 리스트 값
-        :return:
-            변환된 십진수 리스트 값
-        """
-        BP_D_binary_code = []
-        BP_S_binary_code = []
-
-        for i, gray_code in enumerate(gray_code_list):
-            BP_D = []
-            BP_S = []
-            for j, code in enumerate(gray_code):
-                if j < 8:
-                    BP_D.append(code)
-                else:
-                    BP_S.append(code)
-            BP_D_binary_code.append(self.convert_GrayCode_to_BinaryCode(BP_D))
-            BP_S_binary_code.append(self.convert_GrayCode_to_BinaryCode(BP_S))
-
-        BP_D_dec_list = self.convert_BinaryCode_to_DEC(BP_D_binary_code)
-        BP_S_dec_list = self.convert_BinaryCode_to_DEC(BP_S_binary_code)
-
-        return BP_D_dec_list, BP_S_dec_list
-
-    def convert_GrayCode_to_BinaryCode(self, gray):
-        """
-        gray code를 binary code로 변환
-        :param gray:
-            gray code 리스트 값
-        :return:
-            변환된 binary code 리스트 값
-        """
-        binary_code = []
-        x_bit = 0
-
-        for i, bit in enumerate(gray):
-            if i == 0:
-                binary_code.append(bit)
-                x_bit = bit
-            else:
-                x_bit = x_bit ^ bit
-                binary_code.append(x_bit)
-
-        return binary_code
 
     def convert_BinaryCode_to_DEC(self, binary):
         """
@@ -1245,47 +935,6 @@ class DistinguishingPeopleByPpgSignals:
 
         return dec_list
 
-    """
-    십진수를 Gray code로 Encoding하는 부분
-    """
-    def convert_DEC_to_GrayCode(self, dec):
-        """
-        Array를 graycode로 변환
-        십진수 값을 graycode 값으로 변환한다.
-        graycode는 (십진수 -> binary code -> gray code)의 과정을 거쳐야함
-        :param dec:
-            십진수 리스트 값
-        :return:
-            변환된 graycode 리스트 값
-        """
-        binary_BP_list = self.convert_DEC_to_BinaryCode(dec)
-
-        Gray_BP_list = self.convert_BinaryCode_to_GrayCode(binary_BP_list)
-
-        return Gray_BP_list
-
-    def convert_BinaryCode_to_GrayCode(self, binary):
-        """
-        binary code를 gray code로 변환
-        :param binary:
-            binary code 리스트 값
-        :return:
-            변환된 gray code 리스트 값
-        """
-        Gray_BP_list = []
-
-        for i, element in enumerate(binary):
-            Gray_BP = []
-
-            for j, code in enumerate(element):
-                if j == 0:
-                    Gray_BP.append(code)
-                else:
-                    value = element[j-1] ^ element[j]
-                    Gray_BP.append(value)
-            Gray_BP_list.append(Gray_BP)
-
-        return Gray_BP_list
 
     def convert_DEC_to_BinaryCode(self, dec):
         """
@@ -1307,6 +956,37 @@ class DistinguishingPeopleByPpgSignals:
                     binary_BP_list[i].insert(0, 0)
 
         return binary_BP_list
+
+    def FAR(self, unique_num_Y_dec, unique_num_dec):
+        """
+        FAR 계산
+        FAR : 잘못된 허용의 비율 -> 정답이 아닌데 정답이라고 인정한 비율
+        """
+
+        unique_num_count = [0] * 14
+
+        for unique_num in unique_num_Y_dec:
+            unique_num_count[unique_num] += 1
+
+        true_unique_num_count = [0] * 14
+
+        for i, unique_num in enumerate(unique_num_dec):
+            if unique_num_dec[i] == unique_num_Y_dec[i]:
+                true_unique_num_count[unique_num] += 1
+
+        FAR = [0] * 14
+
+        for i, _ in enumerate(unique_num_count):
+            try:
+                FAR[i] = true_unique_num_count[i] / unique_num_count[i]
+            except ZeroDivisionError:
+                FAR[i] = 0
+
+        # print(unique_num_count)
+        # print(true_unique_num_count)
+        # print("FAR : ", FAR)
+
+        return FAR
 
     # def XOR(self, num1, num2):
     #     num1
