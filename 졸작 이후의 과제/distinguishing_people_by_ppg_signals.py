@@ -1003,6 +1003,7 @@ class DistinguishingPeopleByPpgSignals:
         :return:
         """
         FAR = []
+        # FAR_origin = []
 
         print("FAR")
         # print(tuple(unique_num_Y_dec))
@@ -1038,8 +1039,16 @@ class DistinguishingPeopleByPpgSignals:
             del unique_num_dec[i]
             del unique_num_Y_dec[i]
 
-        # print(FAR)
-        FAR_origin = FAR
+        print(FAR)
+        # FAR_origin = FAR[:]
+        # FAR_origin = FAR.copy()
+        # FAR_origin = tuple(FAR)
+
+        FAR_origin = []
+
+        for i, data in enumerate(FAR):
+            FAR_origin.append((tuple(data)))
+        FAR_origin = tuple(FAR_origin)
 
         unique_num_count = [0] * max
 
@@ -1053,7 +1062,7 @@ class DistinguishingPeopleByPpgSignals:
                     FAR[i][j] = round(FAR[i][j], 2)
                 except ZeroDivisionError:
                     pass
-                    FAR[i][j] = 0
+                    # FAR[i][j] = 0
 
         print(FAR)
 
