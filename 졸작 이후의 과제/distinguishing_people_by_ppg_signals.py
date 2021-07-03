@@ -27,7 +27,7 @@ class DistinguishingPeopleByPpgSignals:
 
         plt.rcParams['font.family'] = 'NanumSquare'
 
-        self.epoch = 2000
+        self.epoch = 200
         self.batch_size = 5
 
     def monitoring_preprocess(self, dir_name, info_dir):
@@ -573,7 +573,9 @@ class DistinguishingPeopleByPpgSignals:
         """
         FAR 구하기 : 각 Label별로 정확도를 계산하는 것
         """
-        FAR = self.FAR(unique_num_Y_dec, unique_num_dec)
+        # FAR = self.FAR(unique_num_Y_dec, unique_num_dec)
+
+        FAR, FAR_origin = self.FAR_2(unique_num_Y_dec, unique_num_dec)
 
         print("\n====Y 값====\n")
         print("BP_D_Y_dec", unique_num_Y_dec)
@@ -646,9 +648,13 @@ class DistinguishingPeopleByPpgSignals:
 
         self.save_prediction_data(save_csv, "prediction_learn.csv")
 
-        FAR_Series = pd.Series(FAR)
+        FAR_df = pd.DataFrame(FAR)
 
-        self.save_prediction_data(FAR_Series, "FAR.csv")
+        self.save_prediction_data(FAR_df, "FAR.csv")
+
+        FAR_origin_df = pd.DataFrame(FAR_origin)
+
+        self.save_prediction_data(FAR_origin_df, "FAR_origin.csv")
 
     def model(self, X_train, X_test, Y_train, Y_test):
         """
@@ -987,6 +993,80 @@ class DistinguishingPeopleByPpgSignals:
         # print("FAR : ", FAR)
 
         return FAR
+
+    def FAR_2(self, unique_num_Y_dec, unique_num_dec):
+        """
+        y축 = Y값
+        x축 = predict값
+        :param unique_num_Y_dec:
+        :param unique_num_dec:
+        :return:
+        """
+        FAR = []
+
+        print("FAR")
+        # print(tuple(unique_num_Y_dec))
+        # print(set(tuple(unique_num_Y_dec)))
+        # print(list(set(tuple(unique_num_Y_dec))))
+
+        unique_num_list = list(set(tuple(unique_num_Y_dec)))
+
+        max = self.max_search(unique_num_list)
+
+        # print(max)
+
+        for _ in range(max):
+            Y = [0] * max
+            FAR.append(Y)
+
+        out_of_data = []
+
+        for i in range(len(unique_num_Y_dec)):
+            if unique_num_dec[i] > max or unique_num_dec[i] < 0:
+                out_of_data.append(i)
+                continue
+
+            Y_dec = unique_num_Y_dec[i]-1
+            predict_dec = unique_num_dec[i]-1
+
+            # print(Y_dec)
+            # print(predict_dec)
+            # print("\n")
+            FAR[Y_dec][predict_dec] += 1
+
+        for i in out_of_data:
+            del unique_num_dec[i]
+            del unique_num_Y_dec[i]
+
+        # print(FAR)
+        FAR_origin = FAR
+
+        unique_num_count = [0] * max
+
+        for unique_num in unique_num_Y_dec:
+            unique_num_count[unique_num-1] += 1
+
+        for i, value in enumerate(unique_num_count):
+            for j in range(max):
+                try:
+                    FAR[i][j] = (FAR[i][j] / value) * 100
+                    FAR[i][j] = round(FAR[i][j], 2)
+                except ZeroDivisionError:
+                    pass
+                    FAR[i][j] = 0
+
+        print(FAR)
+
+        return FAR, FAR_origin
+
+    def max_search(self, unique_list):
+        max = unique_list[0]
+
+        for _, value in enumerate(unique_list):
+            if max < value:
+                max = value
+
+        return max
 
     # def XOR(self, num1, num2):
     #     num1
