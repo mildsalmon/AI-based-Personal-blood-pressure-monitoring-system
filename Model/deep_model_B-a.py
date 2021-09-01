@@ -130,7 +130,7 @@ class deep_collection_basic:
         #               metrics=['accuracy'])
         # history = model.fit(X_train, Y_train, epochs=20, batch_size=100,validation_data=(X_test, Y_test))
 
-        epoch = 200
+        epoch = 2000
         batch_size = 5
 
         model.add(tf.keras.layers.Dense(64, input_dim=130, activation='relu'))

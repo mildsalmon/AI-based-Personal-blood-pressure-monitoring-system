@@ -10,12 +10,14 @@ import copy
 from sklearn.model_selection import train_test_split
 from tensorflow.keras.models import load_model
 
+
 class BpMonitoringSystemByAi:
     def __init__(self):
         # seed 값 설정
-        seed = 0
-        np.random.seed(seed)
-        tf.random.set_seed(3)
+        self.seed = 777
+        np.random.seed(self.seed)
+        tf.random.set_seed(self.seed)
+        os.environ['PYTHONHASHSEED'] = '777'
 
         pd.set_option('display.max_rows', 500)
         pd.set_option('display.max_columns', 1000)
@@ -27,7 +29,7 @@ class BpMonitoringSystemByAi:
 
         plt.rcParams['font.family'] = 'NanumSquare'
 
-        self.epoch = 2000
+        self.epoch = 200
         self.batch_size = 5
 
     def rp_preprocess(self):
@@ -584,7 +586,10 @@ class BpMonitoringSystemByAi:
         # print("X_data:",X_data)
         # print("Y_data:",Y_data)
 
-        X_train, X_test, Y_train, Y_test = train_test_split(X_data, Y_data, test_size=0.3)#, random_state=seed)
+        X_train, X_test, Y_train, Y_test = train_test_split(X_data, Y_data, test_size=0.3, random_state=self.seed)
+
+        print(len(X_train))
+        print(len(X_test))
 
         model, history = self.model(X_train, X_test, Y_train, Y_test)
 
@@ -803,9 +808,9 @@ class BpMonitoringSystemByAi:
         #               metrics=['accuracy'])
         # history = model.fit(X_train, Y_train, epochs=20, batch_size=100,validation_data=(X_test, Y_test))
 
-        model.add(tf.keras.layers.Dense(64, input_dim=144, activation='sigmoid'))
+        model.add(tf.keras.layers.Dense(64, input_dim=144, activation='relu'))
         model.add(tf.keras.layers.Dropout(0.4))
-        model.add(tf.keras.layers.Dense(64, activation='sigmoid'))
+        model.add(tf.keras.layers.Dense(64, activation='relu'))
         model.add(tf.keras.layers.Dropout(0.4))
         model.add(tf.keras.layers.Dense(16, activation='sigmoid'))
 
@@ -1075,6 +1080,8 @@ class BpMonitoringSystemByAi:
         """
         path = os.path.join(os.path.dirname(os.path.abspath(__file__)), dir_name)
 
+        print("실행되는 데이터 파일은 " + path + " 입니다.")
+
         return path
 
     def save_model(self, model):
@@ -1097,7 +1104,7 @@ class BpMonitoringSystemByAi:
 
         :return:
         """
-        model = load_model('data\\model_save.h5')
+        model = load_model('data\\sigmoid_0.4_sigmoid_0.4_sigmoid.h5')
 
         return model
 
@@ -1367,7 +1374,7 @@ if __name__ == "__main__":
     # A.predict("data\\unknown.csv")
 
     # A.monitoring_preprocess("data/Collection/new_100", "data/info_100.csv")
-    A.learn("data\\collection.csv")
+    # A.learn("data\\collection.csv")
     A.predict("data\\unknown.csv")
 
     # A.predict("data/collection_new.csv")

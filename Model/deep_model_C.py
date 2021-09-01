@@ -23,8 +23,8 @@ class deep_collection_basic:
 
         plt.rcParams['font.family'] = 'NanumSquare'
 
-        path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../data/collection.csv")
-
+        path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data\\collection.csv")
+        print("실행되는 데이터 파일은 " + path + " 입니다.")
         print(path)
 
         csv_data = self.read_csv(path=path)
