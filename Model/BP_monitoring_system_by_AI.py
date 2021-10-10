@@ -510,6 +510,9 @@ class BpMonitoringSystemByAi:
     def learn(self, dir_name):
         """
         인공지능 모델 학습을 위한 함수
+        csv 파일을 train data, test data로 분리하고 학습을 진행
+        정상적인 메소드
+
         :param dir_name:
             예측할 데이터가 있는 디렉터리명
             ex) data\\collection.csv
@@ -691,6 +694,9 @@ class BpMonitoringSystemByAi:
     def learn2(self, dir_name):
         """
         인공지능 모델 학습을 위한 함수
+        csv 파일을 train data, test data로 분리하지 않고 학습을 진행
+        테스트를 위해 만든 메소드
+
         :param dir_name:
             예측할 데이터가 있는 디렉터리명
             ex) data\\collection.csv
@@ -777,6 +783,8 @@ class BpMonitoringSystemByAi:
     def model(self, X_train, X_test, Y_train, Y_test):
         """
         학습에 사용하는 인공지능 모델
+        정상적인 메소드
+
         :param X_train:
         :param X_test:
         :param Y_train:
@@ -785,32 +793,9 @@ class BpMonitoringSystemByAi:
         """
         model = tf.keras.models.Sequential()
 
-        # X_train_len = len(X_train)
-        # model.add(tf.keras.layers.Embedding(X_train_len, 144))
-        # model.add(tf.keras.layers.Dropout(0.5))
-        # model.add(tf.keras.layers.Conv1D(64, 5, padding='valid', activation='relu', strides=1))
-        # model.add(tf.keras.layers.MaxPooling1D(pool_size=4))
-        # model.add(tf.keras.layers.LSTM(32, activation='relu'))
-        # model.add(tf.keras.layers.Dense(16))
-        # model.add(tf.keras.layers.Activation('sigmoid'))
-        # model.compile(loss='binary_crossentropy',
-        #               optimizer='adam',
-        #               metrics=['accuracy'])
-        # history = model.fit(X_train, Y_train, epochs=200, batch_size=100, validation_data=(X_test, Y_test))
-
-        # X_train_len = len(X_train)
-        # # print(X_train_len)
-        # model.add(tf.keras.layers.Embedding(X_train_len, 144))
-        # model.add(tf.keras.layers.LSTM(64, activation='relu'))
-        # model.add(tf.keras.layers.Dense(16, activation='softmax'))
-        # model.compile(loss='binary_crossentropy',
-        #               optimizer='adam',
-        #               metrics=['accuracy'])
-        # history = model.fit(X_train, Y_train, epochs=20, batch_size=100,validation_data=(X_test, Y_test))
-
-        model.add(tf.keras.layers.Dense(64, input_dim=144, activation='relu'))
+        model.add(tf.keras.layers.Dense(64, input_dim=144, activation='sigmoid'))
         model.add(tf.keras.layers.Dropout(0.4))
-        model.add(tf.keras.layers.Dense(64, activation='relu'))
+        model.add(tf.keras.layers.Dense(64, activation='sigmoid'))
         model.add(tf.keras.layers.Dropout(0.4))
         model.add(tf.keras.layers.Dense(16, activation='sigmoid'))
 
@@ -821,25 +806,13 @@ class BpMonitoringSystemByAi:
 
         self.save_model(model)
 
-        # from keras.utils.vis_utils import plot_model
-        # # os.environ["PATH"] += os.pathsep + 'C:\python\anaconda3_64\envs\Ai_2.0_20.12.31\Lib\site-packages\graphviz\bin'
-        # plot_model(model, to_file='model_plot.png', show_shapes=True, show_layer_names=True)
-        #
-        # from keras.utils import plot_model
-        # plot_model(model, to_file='model.png')
-        #
-        # from keras import backend as K
-        # trainable_count = int(np.sum([K.count_params(p) for p in set(model.trainable_weights)]))
-        # non_trainable_count = int(np.sum([K.count_params(p) for p in set(model.non_trainable_weights)]))
-        # print('Total params: {:,}'.format(trainable_count + non_trainable_count))
-        # print('Trainable params: {:,}'.format(trainable_count))
-        # print('Non-trainable params: {:,}'.format(non_trainable_count))
-
         return model, history
 
     def model2(self, X_train, Y_train):
         """
         학습에 사용하는 인공지능 모델
+        테스트를 위한 메소드
+
         :param X_train:
         :param X_test:
         :param Y_train:
@@ -848,32 +821,10 @@ class BpMonitoringSystemByAi:
         """
         model = tf.keras.models.Sequential()
 
-        # X_train_len = len(X_train)
-        # model.add(tf.keras.layers.Embedding(X_train_len, 144))
-        # model.add(tf.keras.layers.Dropout(0.5))
-        # model.add(tf.keras.layers.Conv1D(64, 5, padding='valid', activation='relu', strides=1))
-        # model.add(tf.keras.layers.MaxPooling1D(pool_size=4))
-        # model.add(tf.keras.layers.LSTM(32, activation='relu'))
-        # model.add(tf.keras.layers.Dense(16))
-        # model.add(tf.keras.layers.Activation('sigmoid'))
-        # model.compile(loss='binary_crossentropy',
-        #               optimizer='adam',
-        #               metrics=['accuracy'])
-        # history = model.fit(X_train, Y_train, epochs=200, batch_size=100, validation_data=(X_test, Y_test))
 
-        # X_train_len = len(X_train)
-        # # print(X_train_len)
-        # model.add(tf.keras.layers.Embedding(X_train_len, 144))
-        # model.add(tf.keras.layers.LSTM(64, activation='relu'))
-        # model.add(tf.keras.layers.Dense(16, activation='softmax'))
-        # model.compile(loss='binary_crossentropy',
-        #               optimizer='adam',
-        #               metrics=['accuracy'])
-        # history = model.fit(X_train, Y_train, epochs=20, batch_size=100,validation_data=(X_test, Y_test))
-
-        model.add(tf.keras.layers.Dense(64, input_dim=144, activation='relu'))
+        model.add(tf.keras.layers.Dense(64, input_dim=144, activation='sigmoid'))
         model.add(tf.keras.layers.Dropout(0.4))
-        model.add(tf.keras.layers.Dense(64, activation='relu'))
+        model.add(tf.keras.layers.Dense(64, activation='sigmoid'))
         model.add(tf.keras.layers.Dropout(0.4))
         model.add(tf.keras.layers.Dense(16, activation='sigmoid'))
 
@@ -884,19 +835,6 @@ class BpMonitoringSystemByAi:
 
         self.save_model(model)
 
-        # from keras.utils.vis_utils import plot_model
-        # # os.environ["PATH"] += os.pathsep + 'C:\python\anaconda3_64\envs\Ai_2.0_20.12.31\Lib\site-packages\graphviz\bin'
-        # plot_model(model, to_file='model_plot.png', show_shapes=True, show_layer_names=True)
-        #
-        # from keras.utils import plot_model
-        # plot_model(model, to_file='model.png')
-        #
-        # from keras import backend as K
-        # trainable_count = int(np.sum([K.count_params(p) for p in set(model.trainable_weights)]))
-        # non_trainable_count = int(np.sum([K.count_params(p) for p in set(model.non_trainable_weights)]))
-        # print('Total params: {:,}'.format(trainable_count + non_trainable_count))
-        # print('Trainable params: {:,}'.format(trainable_count))
-        # print('Non-trainable params: {:,}'.format(non_trainable_count))
 
         return model, history
 
@@ -1375,7 +1313,11 @@ if __name__ == "__main__":
 
     # A.monitoring_preprocess("data/Collection/new_100", "data/info_100.csv")
     # A.learn("data\\collection.csv")
-    A.predict("data\\unknown.csv")
+    # A.predict("data\\unknown.csv")
+
+    # A.monitoring_preprocess("data/Collection/new_100", "data/info_100.csv")
+    A.learn("data\\28+100\\collection.csv")
+    # A.predict("data\\unknown.csv")
 
     # A.predict("data/collection_new.csv")
 
