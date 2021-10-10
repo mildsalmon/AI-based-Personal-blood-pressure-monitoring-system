@@ -467,29 +467,6 @@ class BpMonitoringSystemByAi:
         """
         model = tf.keras.models.Sequential()
 
-        # X_train_len = len(X_train)
-        # model.add(tf.keras.layers.Embedding(X_train_len, 144))
-        # model.add(tf.keras.layers.Dropout(0.5))
-        # model.add(tf.keras.layers.Conv1D(64, 5, padding='valid', activation='relu', strides=1))
-        # model.add(tf.keras.layers.MaxPooling1D(pool_size=4))
-        # model.add(tf.keras.layers.LSTM(32, activation='relu'))
-        # model.add(tf.keras.layers.Dense(16))
-        # model.add(tf.keras.layers.Activation('sigmoid'))
-        # model.compile(loss='binary_crossentropy',
-        #               optimizer='adam',
-        #               metrics=['accuracy'])
-        # history = model.fit(X_train, Y_train, epochs=200, batch_size=100, validation_data=(X_test, Y_test))
-
-        # X_train_len = len(X_train)
-        # # print(X_train_len)
-        # model.add(tf.keras.layers.Embedding(X_train_len, 144))
-        # model.add(tf.keras.layers.LSTM(64, activation='relu'))
-        # model.add(tf.keras.layers.Dense(16, activation='softmax'))
-        # model.compile(loss='binary_crossentropy',
-        #               optimizer='adam',
-        #               metrics=['accuracy'])
-        # history = model.fit(X_train, Y_train, epochs=20, batch_size=100,validation_data=(X_test, Y_test))
-
         model.add(tf.keras.layers.Dense(64, input_dim=144, activation='relu'))
         model.add(tf.keras.layers.Dropout(0.4))
         model.add(tf.keras.layers.Dense(64, activation='relu'))
