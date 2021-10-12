@@ -3,7 +3,7 @@ paper/
 data/
 .idea
 Model/data/*
-!image/
+
+!image/readme/*
 image/*
-!image/readme/*.png
 del/
