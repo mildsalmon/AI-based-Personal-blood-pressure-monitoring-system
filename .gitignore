@@ -5,5 +5,5 @@ data/
 Model/data/*
 !image/
 image/*
-!image/readme/*
+!image/readme/*.png
 del/
