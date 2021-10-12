@@ -29,7 +29,7 @@
 
 ![d-day 프로그램_시스템구성](/image/readme/pic.png)
 
-# 4. 모델의 정확도
+# 4. 인공지능 모델의 정확도
 
 - 정확도
   - 0.825
@@ -38,7 +38,9 @@
 
 # 5. 시연 영상
 
-[https://youtu.be/XBB2TYRd4N4](https://youtu.be/XBB2TYRd4N4)
+[![Video Label](http://img.youtube.com/vi/XBB2TYRd4N4/0.jpg)](https://youtu.be/XBB2TYRd4N4)
+
+위 이미지를 클릭하시면, 유튜브 영상으로 연결됩니다.
 
 # 6. 개발 환경 설정
 
