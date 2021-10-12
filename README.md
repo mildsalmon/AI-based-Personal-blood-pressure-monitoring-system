@@ -1,3 +1,9 @@
+> 관련 개발일지는 아래 링크를 참고해주세요.
+> 
+> [노션 개발일지](https://mildsalmon.notion.site/AI-based-blood-pressure-monitoring-system-56a07290a6994a19961494bcaecf1387)
+> 
+> [블로그 개발일지](https://blex.me/@mildsalmon/%EC%A1%B8%EC%97%85%EC%9E%91%ED%92%88-%EC%9D%B8%EA%B3%B5%EC%A7%80%EB%8A%A5-%EA%B8%B0%EB%B0%98-%EA%B0%9C%EC%9D%B8%EC%9A%A9-%ED%98%88%EC%95%95-%EB%AA%A8%EB%8B%88%ED%84%B0%EB%A7%81-%EC%8B%9C%EC%8A%A4%ED%85%9C)
+
 # 인공지능 기반 개인용 혈압 모니터링 시스템
 
 사용자가 언제 어디서든 혈압을 쉽게 측정 및 모니터링할 수 있도록 광혈류신호(PPG)와 딥러닝 알고리즘을 이용한 무구속적 혈압 측정 시스템을 개발하였다.
