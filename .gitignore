@@ -4,6 +4,8 @@ data/
 .idea
 Model/data/*
 
-!image/readme/*
+!image/
 image/*
+!image/readme/
+
 del/
