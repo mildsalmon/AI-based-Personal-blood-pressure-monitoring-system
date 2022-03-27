@@ -25,75 +25,22 @@ class deep_collection_basic:
 
         path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../data/collection.csv")
 
-        print(path)
-
         csv_data = self.read_csv(path=path)
-        print(csv_data)
-
         wave = csv_data.iloc[:,0:128]
         BP = csv_data.iloc[:,-4:-2]
         HW = csv_data.iloc[:,-2:]
 
-        print(wave,"\n",BP, "\n", HW)
-
         wave_list = wave.values.tolist()
 
-        print("wave_list", wave_list)
-        # print("wave_list", *wave_list, sep='\n')
-        print("wave_list[0]_len", len(wave_list[0]))
-        print("wave_list_len", len(wave_list))
-        print("wave_list_type", type(wave_list))
+        HW_list = HW.values.tolist()
 
-        Height = HW.iloc[:, 0]
-        Weight = HW.iloc[:, 1]
+        BP_DS = BP.iloc[:,0:2]
 
-        Height = Height.values
-        Weight = Weight.values
-
-        Height_gray_code_list = self.gray_code(Height)
-        Weight_gray_code_list = self.gray_code(Weight)
-
-        print("Height_gray_code_list", Height_gray_code_list)
-        print("Weight_gray_code_list", Weight_gray_code_list)
-
-        HW_gray_code_list = self.list_append(Height_gray_code_list, Weight_gray_code_list)
-
-        print("HW_gray_code_list", HW_gray_code_list)
-
-        BP_D = BP.iloc[:, 0]
-        BP_S = BP.iloc[:, 1]
-
-        BP_D = BP_D.values
-        BP_S = BP_S.values
-
-        print(type(BP_D))
-
-        BP_D_gray_code_list = self.gray_code(BP_D)
-        BP_S_gray_code_list = self.gray_code(BP_S)
-
-        print("BP_D_gray_code_list", BP_D_gray_code_list)
-        print("BP_S_gray_code_list", BP_S_gray_code_list)
-        # BP_D_series = pd.Series(BP_D_gray_code_list)
-        # BP_S_series = pd.Series(BP_S_gray_code_list)
-
-        # BP_pd = pd.DataFrame([BP_D_series, BP_S_series])
-
-        # print(BP_D_gray_code_list)
-        # print(type(BP_D_gray_code_list))
-        # print(BP_D_gray_code_list.shape)
-
-        # X_data = wave.values.astype(float)
-        # X = pd.concat([wave, HW], axis=1)
-        # print("X:",X)
-
-        X_np = self.list_append(wave_list, HW_gray_code_list)
-        Y_np = self.list_append(BP_D_gray_code_list, BP_S_gray_code_list)
+        X_np = self.list_append(wave_list, HW_list)
+        Y_np = BP_DS
 
         X_data = self.make_np_array(X_np)
         Y_data = self.make_np_array(Y_np)
-
-        print("X_data:",X_data)
-        print("Y_data:",Y_data)
 
         X_train, X_test, Y_train, Y_test = train_test_split(X_data, Y_data, test_size=0.3)#, random_state=seed)
 
@@ -128,18 +75,15 @@ class deep_collection_basic:
         epoch = 200
         batch_size = 5
 
-        model.add(tf.keras.layers.Dense(64, input_dim=144, activation='relu'))
+        model.add(tf.keras.layers.Dense(64, input_dim=130, activation='relu'))
         model.add(tf.keras.layers.Dropout(0.4))
         model.add(tf.keras.layers.Dense(64, activation='relu'))
         model.add(tf.keras.layers.Dropout(0.4))
-        # model.add(tf.keras.layers.Dense(32, activation='sigmoid'))
-        # model.add(tf.keras.layers.Dropout(0.4))
-        model.add(tf.keras.layers.Dense(16, activation='sigmoid'))
+        model.add(tf.keras.layers.Dense(2, activation='sigmoid'))
         model.compile(loss='binary_crossentropy',
                       optimizer='adam',
                       metrics=['accuracy'])
         history = model.fit(X_train, Y_train, epochs=epoch, batch_size=batch_size, validation_data=(X_test, Y_test))
-
 
         model.summary()
         print(model.evaluate(X_test, Y_test))
@@ -147,7 +91,6 @@ class deep_collection_basic:
         print(history.history['val_loss'])
         print(history.history['loss'])
 
-        # print(X_train[1:10])
         print(model.predict(X_train[1:2], batch_size=batch_size))
         print(Y_train[1])
 
@@ -156,31 +99,19 @@ class deep_collection_basic:
 
         print("X_test[1] : \n", X_test[0:10])
         print("model.predict(X_test[1:2], batch_size=5) : \n", predict)
-        # print("type(predict) : \n", type(predict))
         print("Y_test[1] : \n",Y_test_use)
 
         predict_list = self.np_to_list(predict)
         Y_test_use_list = self.np_to_list(Y_test_use)
 
-        gray_list = self.predict_to_gray(predict_list)
-        Y_test_use_gray_list = self.predict_to_gray(Y_test_use_list)
+        BP_D_binary_code, BP_S_binary_code = self.binary_code(predict_list)
+        BP_D_Y_test, BP_S_Y_test = self.binary_code(Y_test_use_list)
 
-        # print("predict_list :", predict_list)
-        print("gray_list :\n", *gray_list, sep='\n')
+        BP_D_dec = BP_D_binary_code
+        BP_S_dec = BP_S_binary_code
 
-        print("matching per : ", self.matching_per(self.np_to_list(Y_test_use), gray_list))
-
-        BP_D_binary_code, BP_S_binary_code = self.binary_code(gray_list)
-        # print("BP_D_binary_code :\n", *BP_D_binary_code, sep='\n')
-        # print("BP_S_binary_code :\n", *BP_S_binary_code, sep='\n')
-
-        BP_D_Y_test, BP_S_Y_test = self.binary_code(Y_test_use_gray_list)
-
-        BP_D_dec = self.binary_to_dec(BP_D_binary_code)
-        BP_S_dec = self.binary_to_dec(BP_S_binary_code)
-
-        BP_D_Y_dec = self.binary_to_dec(BP_D_Y_test)
-        BP_S_Y_dec = self.binary_to_dec(BP_S_Y_test)
+        BP_D_Y_dec = BP_D_Y_test
+        BP_S_Y_dec = BP_S_Y_test
 
         print("\n====Y 값====\n")
         print("BP_D_Y_dec", BP_D_Y_dec)
@@ -201,8 +132,6 @@ class deep_collection_basic:
 
         print("정확도 : ", model.evaluate(X_test, Y_test)[1])
         print("오차 : ", model.evaluate(X_test, Y_test)[0])
-        # print(X_test)
-        # print(model.get_weights())
 
         y_loss = history.history['loss']
         y_vloss = history.history['val_loss']
@@ -245,7 +174,7 @@ class deep_collection_basic:
         Y_test_Series = pd.DataFrame(Y_test)
         Y_dec_Series = pd.DataFrame([BP_D_Y_dec, BP_S_Y_dec], index=['real_BP_D', 'real_BP_S'])
         predict_dec_Serires = pd.DataFrame([BP_D_dec, BP_S_dec], index=['predict_BP_D', 'predict_BP_S'])
-        per = pd.DataFrame([self.matching_per(self.np_to_list(Y_test_use), gray_list)], index=['gray code per'])
+        per = pd.DataFrame([self.matching_per(self.np_to_list(Y_test_use), predict_list)], index=['gray code per'])
 
         Y_dec_Series = Y_dec_Series.transpose()
         predict_dec_Serires = predict_dec_Serires.transpose()
@@ -253,21 +182,10 @@ class deep_collection_basic:
 
         save_csv = pd.concat([X_test_Series, Y_dec_Series, predict_dec_Serires, per], axis=1)
 
-        # print(X_test_Series)
-        # print(X_test_Series.shape)
-        # print(Y_test_Series)
-        # print(Y_test_Series.shape)
-        # print(Y_dec_Series)
-        # print(Y_dec_Series.shape)
-        # print(predict_dec_Serires)
-        # print(predict_dec_Serires.shape)
-
-        print("save_csv : ", save_csv)
-
         self.save_list_as_csv(save_csv)
 
     def save_list_as_csv(self, save):
-        path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../data/prediction_D.csv")
+        path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../data/prediction_B.csv")
 
         save.to_csv(path, mode='w', header=True)
 
@@ -300,13 +218,7 @@ class deep_collection_basic:
             predict_max = max(predict)
             predict_min = min(predict)
 
-            # print(predict)
-            # print(predict_max)
-            # print(predict_min)
-
             half = (predict_max - predict_min)/2
-
-            # print(half)
 
             predict_to_binary = []
 
@@ -315,10 +227,6 @@ class deep_collection_basic:
                     bin = 1
                 elif element < half:
                     bin = 0
-                # if element > 0:
-                #     bin = 1
-                # elif element <= 0:
-                #     bin = 0
                 predict_to_binary.append(bin)
             binary_list.append(predict_to_binary)
 
@@ -332,21 +240,9 @@ class deep_collection_basic:
     def list_append(self, BP_D, BP_S):
         result = []
 
-        # result.extend(BP_D)
-        # result.extend(BP_S)
-
-        # print(type(BP_D))
-        # print(type(BP_S))
-
         for i,_ in enumerate(BP_D):
             # print(BP_D[i])
             result.append(BP_D[i] + BP_S[i])
-
-        # print("list_append result", *result, sep="\n")
-        # print(len(result))
-
-        # result = np.array(result)
-        # print("list_append result", result)
 
         return result
 
@@ -360,21 +256,11 @@ class deep_collection_basic:
 
     def binary_to_dec(self, binary_code):
         dec_list = []
-        # binary_sum = []
 
         for code in binary_code:
             code = list(map(str, code))
             binary_sum = "0b"+"".join(code)
             dec_list.append(int(binary_sum, 2))
-            # binary_sum = list(map(int, binary_sum))
-            # dec_list.append(format(binary_sum, 'd'))
-
-            # binary_sum.append("".join(code))
-
-        # binary_sum = list(map(int, binary_sum))
-
-        # for binary in binary_sum:
-        #     dec_list.append(format(binary, 'd'))
 
         return dec_list
 
@@ -386,7 +272,7 @@ class deep_collection_basic:
             BP_D = []
             BP_S = []
             for j, code in enumerate(gray_code):
-                if j < 8:
+                if j < 1:
                     BP_D.append(code)
                 else:
                     BP_S.append(code)
@@ -410,10 +296,7 @@ class deep_collection_basic:
         return binary_code
 
     def gray_code(self, BP):
-        #
         binary_BP_list = self.dec_to_binary_code(BP)
-
-        # print(binary_BP_list)
 
         Gray_BP_list = []
 
@@ -426,11 +309,7 @@ class deep_collection_basic:
                 else:
                     value = element[j-1] ^ element[j]
                     Gray_BP.append(value)
-            # print(Gray_BP)
             Gray_BP_list.append(Gray_BP)
-        # print(Gray_BP_list)
-
-        # Gray_BP_np = np.array(Gray_BP_list)
 
         return Gray_BP_list
 
@@ -440,21 +319,13 @@ class deep_collection_basic:
         for i, element in enumerate(BP):
             element = int(element)
             binary_BP = format(element, 'b')
-            # print(element, "&", binary_BP)
             binary_BP_list.append(list(map(int, binary_BP)))
-            # print(binary_BP_list)
             if len(binary_BP_list[i]) < 8:
                 for j in range(8-len(binary_BP_list[i])):
                     binary_BP_list[i].insert(0, 0)
 
-            # print(binary_BP_list)
-        # print(len(binary_BP_list))
-        # print(binary_BP_list)
-
         return binary_BP_list
 
-    # def XOR(self, num1, num2):
-    #     num1
 
 if __name__ == "__main__":
     deep_collection_basic()
