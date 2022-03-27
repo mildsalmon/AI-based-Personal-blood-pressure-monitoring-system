@@ -17,6 +17,9 @@ class BpMonitoringSystemByAi:
         np.random.seed(seed)
         tf.random.set_seed(3)
 
+        """
+        pandas, numpy, plt 초기 설정값 변경
+        """
         # pd.set_option('display.max_rows', 500)
         # pd.set_option('display.max_columns', 1000)
         # pd.set_option('display.width', 1000)
@@ -30,17 +33,21 @@ class BpMonitoringSystemByAi:
         self.epoch = 200
         self.batch_size = 5
 
-    def rp_preprocess(self, file_name, info_dir):
+    def rp_preprocess(self, file_name: str, info_dir: str) -> None:
         """
         라즈베리파이에서 수집한 데이터 전처리
-        :return:
+        """
+
+        """
+        Extract
         """
         read_path = self.set_path(file_name)
         info_path = self.set_path(info_dir)
 
+        """
+        Transform
+        """
         spo2_wave_first = [5, 70]
-
-        # spo2_wave_start = []
 
         select_wave_pd = pd.DataFrame()
 
@@ -50,16 +57,10 @@ class BpMonitoringSystemByAi:
         ppg_pd = self.load_collection_data(path=read_path)
         info_pd = self.load_collection_data(path=info_path)
 
-        # ppg_pd = ppg_pd[['PPG']]
-        # ppg_tp = ppg_pd.transpose()
-        # ppg_pd = ppg_tp.transpose()
-        # print(ppg_pd)
         first_interval = ppg_pd.iloc[spo2_wave_first[0]: spo2_wave_first[1], :]
-        # print(first_interval)
-        first_ppg = first_interval.iloc[:,0]
-        first_index = first_ppg.astype(float).idxmax()
 
-        # spo2_wave_start.append(first_index)
+        first_ppg = first_interval.iloc[:, 0]
+        first_index = first_ppg.astype(float).idxmax()
 
         ppg_pd = ppg_pd.iloc[first_index:, :]
 
@@ -69,9 +70,6 @@ class BpMonitoringSystemByAi:
             spo2_wave_all = spo2_wave + spo2_wave_all
 
         spo2_wave_all_avg = spo2_wave_all / len(ppg_pd.iloc[:, 0])
-
-        # x = range(len(ppg_pd.iloc[:, 0]))
-        # y = [spo2_wave_all_avg for _ in x]
 
         min = ppg_pd.iloc[:, 0].max()
         min_1_count = 0
@@ -142,10 +140,9 @@ class BpMonitoringSystemByAi:
         start_point = [ppg_pd.index[0]]
         end_point = [start_point[0] + 127]
 
-        # print(ppg_pd)
         x = range(len(ppg_pd.loc[:,'PPG']))
         """
-        환자 감시 장치에서 2분동안 수집한 PPG 신호 전체
+        환자 감시 장치에서 2분동안 수집한 PPG 신호 전체 그래프
         """
         # plt.rcParams["figure.figsize"] = (18, 7)
         # plt.plot(x, ppg_pd.loc[:,'PPG'])
@@ -211,13 +208,8 @@ class BpMonitoringSystemByAi:
         # plt.plot(x, ppg_pd.loc[:, "PPG"], c='k')
 
         for n in range(len(start_point[:-1])):
-            # print(len(start_point))
-
             x = range(start_point[n], end_point[n] + 1)
             y = ppg_pd.loc[start_point[n]:end_point[n], 'PPG']
-
-            # print(len(x))
-            # print(len(y))
 
             plt.plot(x, y, c=color[n%len(color)])
 
@@ -249,14 +241,10 @@ class BpMonitoringSystemByAi:
             if min in select_wave_one.unique():
                 continue
 
-            # if ((select_wave_one_avg - spo2_wave_all_avg) > 250) or ((select_wave_one_avg - spo2_wave_all_avg) < -250):
-            #     continue
-
             select_wave_one_avg_list.append(select_wave_one_avg)
 
             x = range(wave_start - start_point[0], wave_start + 128 - start_point[0])
             y = [select_wave_one_avg for _ in x]
-            #
             # plt.plot(x, select_wave_one, c='cornflowerblue')  # cornflowerblue #steelblue
             plt.plot(x, y, c=color[o % len(color)])
 
@@ -276,6 +264,9 @@ class BpMonitoringSystemByAi:
 
         select_wave_full_avg_list.append(select_wave_one_avg_list)
 
+        """
+        Load
+        """
         select_wave_pd.to_csv("rp_text.csv", mode='w', header=True)
 
     def learn(self, dir_name):
@@ -286,30 +277,18 @@ class BpMonitoringSystemByAi:
             ex) data\\collection.csv
         :return:
         """
+
         path = self.set_path(dir_name)
-
-        # print(path)
-
         csv_data = self.load_collection_data(path=path)
-        # print(csv_data)
 
         wave = csv_data.iloc[:,0:128]
         BP = csv_data.iloc[:,-4:-2]
         HW = csv_data.iloc[:,-2:]
 
-        # print(wave,"\n",BP, "\n", HW)
-
         """
         PPG 정보를 list로 변환
         """
         wave_list = wave.values.tolist()
-
-        # print("wave_list", wave_list)
-        # # print("wave_list", *wave_list, sep='\n')
-        # print("wave_list[0]_len", len(wave_list[0]))
-        # print("wave_list_len", len(wave_list))
-        # print("wave_list_type", type(wave_list))
-
         """
         키, 몸무게를 각 변수로 분리
         """
@@ -319,17 +298,16 @@ class BpMonitoringSystemByAi:
         Height = Height.values
         Weight = Weight.values
 
-        # 키, 몸무게(십진수 데이터)를 gray code로 변환
+        """
+        키, 몸무게(십진수 데이터)를 gray code로 변환
+        """
         Height_gray_code_list = self.convert_DEC_to_GrayCode(Height)
         Weight_gray_code_list = self.convert_DEC_to_GrayCode(Weight)
 
-        # print("Height_gray_code_list", Height_gray_code_list)
-        # print("Weight_gray_code_list", Weight_gray_code_list)
-
-        # 분리한 키, 몸무게의 gray code를 합침
+        """
+        분리한 키, 몸무게의 gray code를 합침
+        """
         HW_gray_code_list = self.list_append(Height_gray_code_list, Weight_gray_code_list)
-
-        # print("HW_gray_code_list", HW_gray_code_list)
 
         """
         혈압 정보를 수축기 혈압과 이완기 혈압으로 구분
@@ -340,13 +318,8 @@ class BpMonitoringSystemByAi:
         BP_D = BP_D.values
         BP_S = BP_S.values
 
-        # print(type(BP_D))
-
         BP_D_gray_code_list = self.convert_DEC_to_GrayCode(BP_D)
         BP_S_gray_code_list = self.convert_DEC_to_GrayCode(BP_S)
-
-        # print("BP_D_gray_code_list", BP_D_gray_code_list)
-        # print("BP_S_gray_code_list", BP_S_gray_code_list)
 
         X_np = self.list_append(wave_list, HW_gray_code_list)
         Y_np = self.list_append(BP_D_gray_code_list, BP_S_gray_code_list)
@@ -354,20 +327,17 @@ class BpMonitoringSystemByAi:
         X_data = self.make_np_array(X_np)
         Y_data = self.make_np_array(Y_np)
 
-        # print("X_data:",X_data)
-        # print("Y_data:",Y_data)
-
         X_train, X_test, Y_train, Y_test = train_test_split(X_data, Y_data, test_size=0.3)#, random_state=seed)
 
         model, history = self.model(X_train, X_test, Y_train, Y_test)
 
         model.summary()
+
         print(model.evaluate(X_test, Y_test))
 
         print(history.history['val_loss'])
         print(history.history['loss'])
 
-        # print(X_train[1:10])
         print(model.predict(X_train[1:2], batch_size=self.batch_size))
         print(Y_train[1])
 
@@ -376,7 +346,6 @@ class BpMonitoringSystemByAi:
 
         print("X_test[1] : \n", X_test[0:10])
         print("model.predict(X_test[1:2], batch_size=5) : \n", predict)
-        # print("type(predict) : \n", type(predict))
         print("Y_test[1] : \n",Y_test_use)
 
         BP_D_dec, BP_S_dec, BP_D_Y_dec, BP_S_Y_dec, per = self.postprocess(predict, Y_test_use)
@@ -400,8 +369,6 @@ class BpMonitoringSystemByAi:
 
         print("정확도 : ", model.evaluate(X_test, Y_test)[1])
         print("오차 : ", model.evaluate(X_test, Y_test)[0])
-        # print(X_test)
-        # print(model.get_weights())
 
         y_loss = history.history['loss']
         y_vloss = history.history['val_loss']
@@ -491,25 +458,12 @@ class BpMonitoringSystemByAi:
         :return:
         """
         path = self.set_path(dir_name)
-
-        # print(path)
-
         csv_data = self.load_collection_data(path=path)
-        # print(csv_data)
 
         wave = csv_data.iloc[:,0:128]
-        # BP = csv_data.iloc[:,-4:-2]
         HW = csv_data.iloc[:,-2:]
 
-        # print(wave,"\n",BP, "\n", HW)
-
         wave_list = wave.values.tolist()
-
-        # print("wave_list", wave_list)
-        # # print("wave_list", *wave_list, sep='\n')
-        # print("wave_list[0]_len", len(wave_list[0]))
-        # print("wave_list_len", len(wave_list))
-        # print("wave_list_type", type(wave_list))
 
         Height = HW.iloc[:, 0]
         Weight = HW.iloc[:, 1]
@@ -520,52 +474,22 @@ class BpMonitoringSystemByAi:
         Height_gray_code_list = self.convert_DEC_to_GrayCode(Height)
         Weight_gray_code_list = self.convert_DEC_to_GrayCode(Weight)
 
-        # print("Height_gray_code_list", Height_gray_code_list)
-        # print("Weight_gray_code_list", Weight_gray_code_list)
-
         HW_gray_code_list = self.list_append(Height_gray_code_list, Weight_gray_code_list)
 
-        # print("HW_gray_code_list", HW_gray_code_list)
-
-        # BP_D = BP.iloc[:, 0]
-        # BP_S = BP.iloc[:, 1]
-        #
-        # BP_D = BP_D.values
-        # BP_S = BP_S.values
-
-        # print(type(BP_D))
-
-        # BP_D_gray_code_list = self.convert_DEC_to_GrayCode(BP_D)
-        # BP_S_gray_code_list = self.convert_DEC_to_GrayCode(BP_S)
-
-        # print("BP_D_gray_code_list", BP_D_gray_code_list)
-        # print("BP_S_gray_code_list", BP_S_gray_code_list)
-
         X_np = self.list_append(wave_list, HW_gray_code_list)
-        # Y_np = self.list_append(BP_D_gray_code_list, BP_S_gray_code_list)
 
         X_data = self.make_np_array(X_np)
-        # Y_data = self.make_np_array(Y_np)
-
-        # print("X_data:",X_data)
-        # print("Y_data:",Y_data)
 
         model = self.load_model()
 
         model.summary()
-        # print(model.evaluate(X_data, Y_data))
 
-        # print(X_train[1:10])
         print(model.predict(X_data[1:2], batch_size=self.batch_size))
-        # print(Y_data[1])
 
         predict = model.predict(X_data[:], batch_size=self.batch_size)
-        # Y_test_use = Y_data[:]
 
         print("X_test[1] : \n", X_data[0:10])
         print("model.predict(X_test[1:2], batch_size=5) : \n", predict)
-        # print("type(predict) : \n", type(predict))
-        # print("Y_test[1] : \n",Y_test_use)
 
         BP_D_dec, BP_S_dec = self.postprocess(predict)
 
@@ -576,7 +500,7 @@ class BpMonitoringSystemByAi:
         print("\n====predict 값====\n")
         print("BP_D_dec", BP_D_dec)
         print("BP_S_dec", BP_S_dec)
-        #
+
         for i in range(len(BP_D_dec)):
         #     print("\n====Y 값====\n")
         #     print("BP_D_Y_dec", BP_D_Y_dec[i])
@@ -589,52 +513,23 @@ class BpMonitoringSystemByAi:
         # print("정확도 : ", model.evaluate(X_data, Y_data)[1])
         # print("오차 : ", model.evaluate(X_data, Y_data)[0])
 
-        X_test_Series = pd.DataFrame(X_data)
-        # Y_test_Series = pd.DataFrame(Y_data)
-        # Y_dec_Series = pd.DataFrame([BP_D_Y_dec, BP_S_Y_dec], index=['real_BP_D', 'real_BP_S'])
-        # predict_dec_Serires = pd.DataFrame([BP_D_dec, BP_S_dec], index=['predict_BP_D', 'predict_BP_S'])
-        # per = pd.DataFrame([per], index=['gray code per'])
-
-        # Y_dec_Series = Y_dec_Series.transpose()
-        # predict_dec_Serires = predict_dec_Serires.transpose()
-        # per = per.transpose()
-
-        # save_csv = pd.concat([X_test_Series, Y_dec_Series, predict_dec_Serires, per], axis=1)
-
-        # print("save_csv : ", save_csv)
-
-        # self.save_prediction_data(save_csv, "prediction_new.csv")
-
         return BP_D_dec, BP_S_dec
 
-    def postprocess(self, predict):
+    def postprocess(self, predict) -> list:
         """
         후처리 과정
         :param predict:
             인공지능 모델링을 통해 얻은 순수 예측값
-        :param Y_test_use:
-            실측한 데이터의 Y값(수축기 혈압, 이완기 혈압)
         :return:
             predction(수축기 혈압, 이완기 혈압), 실측 값(수축기 혈압, 이완기 혈압), 예측값과 실측값 사이의 정확도(%)
         """
         predict_list = self.convert_NP_to_LIST(predict)
-        # Y_test_use_list = self.convert_NP_to_LIST(Y_test_use)
-
         gray_list = self.convert_Pridiction_to_GrayCode(predict_list)
-        # Y_test_use_gray_list = self.convert_Pridiction_to_GrayCode(Y_test_use_list)
-
-        # per = self.match(Y_test_use_list, gray_list)
-        # print("predict_list :", predict_list)
-        # print("gray_list :\n", *gray_list, sep='\n')
-
-        # print("matching per : ", per)
-
         BP_D_dec, BP_S_dec = self.convert_GrayCode_to_DEC(gray_list)
-        # BP_D_Y_dec, BP_S_Y_dec = self.convert_GrayCode_to_DEC(Y_test_use_gray_list)
 
-        return BP_D_dec, BP_S_dec
+        return [BP_D_dec, BP_S_dec]
 
-    def search_csv_file(self, file_list):
+    def search_csv_file(self, file_list: list) -> list:
         """
         csv 파일 검색
         디렉토리에서 csv파일만 검색해서 반환
@@ -651,7 +546,7 @@ class BpMonitoringSystemByAi:
 
         return result
 
-    def set_path(self, dir_name):
+    def set_path(self, dir_name: str) -> str:
         """
         경로 설정을 위해 현재 코드를 실행하는 위치와 입력한 디렉터리 경로를 합쳐줌
         C:/data + Model = C:/data/Model
@@ -688,7 +583,7 @@ class BpMonitoringSystemByAi:
 
         return model
 
-    def save_prediction_data(self, save, file_name):
+    def save_prediction_data(self, save, file_name: str):
         """
         prediction값을 csv파일로 저장
         :param save:
@@ -702,7 +597,7 @@ class BpMonitoringSystemByAi:
 
         save.to_csv(path, mode='w', header=True)
 
-    def load_collection_data(self, path):
+    def load_collection_data(self, path: str):
         """
         수집데이터를 불러옴
         불러오는 데이터의 형식은 csv
@@ -716,7 +611,7 @@ class BpMonitoringSystemByAi:
 
         return read_data
 
-    def match(self, real_data, predict_data):
+    def match(self, real_data: list, predict_data: list) -> list:
         """
         검증데이터(Validation set)의 real Y값과 예측데이터(prediction set)의 prediction Y 사이의 유사도를 확인
         gray code(2진 코드)이기 때문에 동일한 위치에 동일한 값이 있는지를 확인
@@ -743,7 +638,7 @@ class BpMonitoringSystemByAi:
 
             return per_list
 
-    def make_np_array(self, data):
+    def make_np_array(self, data: list):
         """
         리스트 데이터를 텐서플로우에서 사용할 수 있게 numpy의 array로 변경
         :param data:
@@ -755,7 +650,7 @@ class BpMonitoringSystemByAi:
 
         return result
 
-    def list_append(self, BP_D, BP_S):
+    def list_append(self, BP_D: list, BP_S: list) -> list:
         """
         두 개의 리스트를 하나로 만들기 위해 더하는 함수
         :param BP_D:
@@ -769,11 +664,9 @@ class BpMonitoringSystemByAi:
 
         return result
 
-    def convert_NP_to_LIST(self, np, dtype=None):
+    def convert_NP_to_LIST(self, np) -> list:
         """
         numpy의 array 형식의 데이터를 list로 변환
-        :param np:
-        :param dtype:
         :return:
             list 자료형의 값
         """
@@ -781,7 +674,7 @@ class BpMonitoringSystemByAi:
 
         return list
 
-    def convert_Pridiction_to_GrayCode(self, prediction_list):
+    def convert_Pridiction_to_GrayCode(self, prediction_list: list) -> list:
         """
         인공지능 모델을 통해 얻어진 prediction값은 0과 1로 이루어진 binary 형식의 값이 아니다.
         이 모델은 키와 몸무게를 gray code로 변환시켜서 학습했기 때문에 예측값도 binary 형식으로 바꿔주는 작업이 필요하다.
@@ -812,7 +705,7 @@ class BpMonitoringSystemByAi:
     """
     Gray code를 십진수로 Decoding하는 부분
     """
-    def convert_GrayCode_to_DEC(self, gray_code_list):
+    def convert_GrayCode_to_DEC(self, gray_code_list: list) -> list:
         """
         gray code를 십진수로 변환
         gray code는 십진수로 변환할 때 (gray code -> binary code -> 십진수)의 과정을 거친다.
@@ -840,7 +733,7 @@ class BpMonitoringSystemByAi:
 
         return BP_D_dec_list, BP_S_dec_list
 
-    def convert_GrayCode_to_BinaryCode(self, gray):
+    def convert_GrayCode_to_BinaryCode(self, gray: list) -> list:
         """
         gray code를 binary code로 변환
         :param gray:
@@ -861,7 +754,7 @@ class BpMonitoringSystemByAi:
 
         return binary_code
 
-    def convert_BinaryCode_to_DEC(self, binary):
+    def convert_BinaryCode_to_DEC(self, binary: list) -> list:
         """
         binary code를 십진수로 변환
         :param binary:
@@ -881,7 +774,7 @@ class BpMonitoringSystemByAi:
     """
     십진수를 Gray code로 Encoding하는 부분
     """
-    def convert_DEC_to_GrayCode(self, dec):
+    def convert_DEC_to_GrayCode(self, dec: list) -> list:
         """
         Array를 graycode로 변환
         십진수 값을 graycode 값으로 변환한다.
@@ -897,7 +790,7 @@ class BpMonitoringSystemByAi:
 
         return Gray_BP_list
 
-    def convert_BinaryCode_to_GrayCode(self, binary):
+    def convert_BinaryCode_to_GrayCode(self, binary: list) -> list:
         """
         binary code를 gray code로 변환
         :param binary:
@@ -920,7 +813,7 @@ class BpMonitoringSystemByAi:
 
         return Gray_BP_list
 
-    def convert_DEC_to_BinaryCode(self, dec):
+    def convert_DEC_to_BinaryCode(self, dec: list) -> list:
         """
         십진수를 gray code로 변환하기 위해 binary code로 변환
         십진수를 binary code로 변환하면서 8자리가 안되는 binary code는 앞에 0을 채워서 8자리를 맞춰줌
@@ -941,8 +834,6 @@ class BpMonitoringSystemByAi:
 
         return binary_BP_list
 
-    # def XOR(self, num1, num2):
-    #     num1
 
 if __name__ == "__main__":
     A = BpMonitoringSystemByAi()
